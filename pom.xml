@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>br.com.orlandoburli</groupId>
 	<artifactId>livraria</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-${build}-SNAPSHOT</version>
 	<name>livraria</name>
 	<description>Projeto Livraria To Do</description>
 
@@ -46,12 +46,6 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
 		</dependency>
 
 		<dependency>
@@ -130,6 +124,26 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+					<skipTests>false</skipTests>
+					<testFailureIgnore>true</testFailureIgnore>
+					<forkMode>once</forkMode>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<outputDirectory>deploy</outputDirectory>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
