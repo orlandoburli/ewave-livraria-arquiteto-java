@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    password: sa
+    tomcat:
+      test-while-idle: true
+      validation-query: SELECT 1 FROM DUAL
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MODE=Oracle
+    username: sa
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+    show-sql: true
+  main:
+    allow-bean-definition-overriding: true
