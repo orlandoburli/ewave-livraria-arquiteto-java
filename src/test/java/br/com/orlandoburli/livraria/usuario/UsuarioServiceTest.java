@@ -27,10 +27,14 @@ import com.github.javafaker.Faker;
 import br.com.orlandoburli.livraria.repository.UsuarioRepository;
 import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
+import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
+import br.com.orlandoburli.livraria.model.Usuario;
 import br.com.orlandoburli.livraria.service.InstituicaoEnsinoService;
 import br.com.orlandoburli.livraria.service.UsuarioService;
 import br.com.orlandoburli.livraria.utils.DbPrepareUtils;
@@ -61,7 +65,7 @@ public class UsuarioServiceTest {
 	private GeraCpfCnpj geradorCpfCnpj = new GeraCpfCnpj();
 	
 	@Test
-	public void deveCriarUmUsuario() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+	public void deveCriarUmUsuario() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, UsuarioNaoInformadoException {
 		
 		InstituicaoEnsinoDto instituicao = createInstituicaoEnsino();
 
@@ -85,6 +89,11 @@ public class UsuarioServiceTest {
 		assertThat(created.getTelefone(), is(equalTo(Utils.numbersOnly(usuarioDto.getTelefone()))));
 		assertThat(created.getInstituicao(), is(notNullValue()));
 		assertThat(created.getInstituicao().getId(), is(equalTo(instituicao.getId())));
+	}
+	
+	@Test
+	public void naoDeveCriarUmUsuarioNulo() {
+		assertThrows(UsuarioNaoInformadoException.class, () -> service.create(null));
 	}
 	
 	@Test
@@ -455,6 +464,127 @@ public class UsuarioServiceTest {
 		assertTrue(exception.getErrors().containsKey("instituicao"));
 
 		assertThat(exception.getErrors().get("instituicao"), hasItem("Instituição é obrigatória"));
+	}
+	
+	@Test
+	public void deveAtualizarUsuario() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, UsuarioNaoInformadoException, UsuarioNaoEncontradoException {
+		UsuarioDto usuarioDto = UsuarioDto
+				.builder()
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.telefone(faker.phoneNumber().cellPhone())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		
+		UsuarioDto created = service.create(usuarioDto);
+		
+		created.setNome("Novo nome");
+		
+		UsuarioDto updated = service.update(created);
+		
+		assertThat(updated, is(notNullValue()));
+		assertThat(updated.getId(), is(equalTo(created.getId())));
+		assertThat(updated.getNome(), is(equalTo(created.getNome())));
+	}
+	
+	@Test
+	public void naoDeveAtualizarUsuarioInexistente() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException {
+		UsuarioDto usuarioDto = UsuarioDto
+				.builder()
+					.id(faker.random().nextLong(100))
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.telefone(faker.phoneNumber().cellPhone())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.update(usuarioDto));
+	}
+	
+	@Test
+	public void naoDeveAtualizarUmUsuarioNulo() {
+		assertThrows(UsuarioNaoInformadoException.class, () -> service.create(null));
+	}
+	
+	@Test
+	public void naoDeveAtualizarUsuarioExcluido() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, UsuarioNaoInformadoException, UsuarioNaoEncontradoException {
+		UsuarioDto usuarioDto = UsuarioDto
+				.builder()
+					.id(faker.random().nextLong(100))
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.telefone(faker.phoneNumber().cellPhone())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		
+		UsuarioDto created = service.create(usuarioDto);
+		
+		service.destroy(created.getId());
+		
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.update(created));
+	}
+	
+	@Test
+	public void deveInativarUsuario() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, UsuarioNaoInformadoException, UsuarioNaoEncontradoException {
+		UsuarioDto usuarioDto = UsuarioDto
+				.builder()
+					.id(faker.random().nextLong(100))
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.telefone(faker.phoneNumber().cellPhone())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		
+		UsuarioDto created = service.create(usuarioDto);
+		
+		service.destroy(created.getId());
+		
+		Usuario entity = repository.findById(created.getId()).orElseThrow(() -> new UsuarioNaoEncontradoException("Erro, usuário não encontrado!"));
+		
+		assertThat(entity, is(notNullValue()));
+		assertThat(entity.getId(), is(equalTo(created.getId())));
+		assertThat(entity.getStatus(), is(equalTo(Status.INATIVO)));
+	}
+	
+	@Test
+	public void naoDeveInativarUsuarioInexistente() {
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.destroy(faker.random().nextLong()));
+	}
+	
+	@Test
+	public void deveEncontrarUsuario() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, UsuarioNaoInformadoException, UsuarioNaoEncontradoException {
+		UsuarioDto usuarioDto = UsuarioDto
+				.builder()
+					.id(faker.random().nextLong(100))
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.telefone(faker.phoneNumber().cellPhone())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		
+		UsuarioDto created = service.create(usuarioDto);
+		
+		UsuarioDto founded = service.get(created.getId());
+		
+		assertThat(founded, is(notNullValue()));
+		assertThat(founded.getId(), is(equalTo(created.getId())));
+		assertThat(founded.getStatus(), is(equalTo(Status.ATIVO)));
+	}
+	
+
+	@Test
+	public void naoDeveEncontrarUsuario() {
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.get(faker.random().nextLong()));
 	}
 	
 	private InstituicaoEnsinoDto createInstituicaoEnsino()

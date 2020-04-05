@@ -184,5 +184,4 @@ public class InstituicaoEnsinoService {
 					messages.get(INSTITUICAO_ENSINO_COM_USUARIOS_EXCEPTION, id));
 		}
 	}
-
 }

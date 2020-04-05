@@ -9,7 +9,7 @@ Este projeto foi criado com o intuito de participar de um teste para a eWave.
 
 ### Versão Java
 
-Foi utilizado o OpenJDK 11 para o desenvolvimento deste teste.
+Foi utilizado o OpenJ9 11 para o desenvolvimento deste teste.
 
 ### Frameworks
 

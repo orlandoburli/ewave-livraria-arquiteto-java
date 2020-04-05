@@ -30,6 +30,7 @@ import br.com.orlandoburli.livraria.exceptions.LivrariaException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.InstituicaoEnsino;
 import br.com.orlandoburli.livraria.repository.InstituicaoEnsinoRepository;
@@ -377,7 +378,7 @@ public class InstituicaoEnsinoServiceTest {
 	}
 
 	@Test
-	public void naoDeveInativarInstituicaoEnsinoComUsuarios() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+	public void naoDeveInativarInstituicaoEnsinoComUsuarios() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, UsuarioNaoInformadoException {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
 				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
 				.endereco(faker.address().fullAddress()).build();
