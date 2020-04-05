@@ -401,9 +401,13 @@ public class InstituicaoEnsinoServiceTest {
 	@Test
 	public void deveRetornarInstituicaoEnsino()
 			throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoNaoInformadaException {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
-				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
-				.endereco(faker.address().fullAddress()).build();
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+					.build();
 
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
 

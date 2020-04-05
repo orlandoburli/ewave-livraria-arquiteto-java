@@ -18,11 +18,14 @@ import br.com.orlandoburli.livraria.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "instituicao_ensino", schema = Constants.SCHEMA)
-@Data
+@Getter 
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
