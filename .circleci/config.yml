@@ -20,6 +20,8 @@ jobs:
       - run: mvn test -Dbuild=$CIRCLE_BUILD_NUM 
       - run: mvn clean package -Dbuild=$CIRCLE_BUILD_NUM -Dmaven.test.skip=true
       - store_artifacts:
+          path: deploy
+      - store_test_results:
           path: target
 workflows:
   api_build:
