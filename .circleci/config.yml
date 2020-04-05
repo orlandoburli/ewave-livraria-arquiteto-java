@@ -12,12 +12,12 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
-      - run: mvn dependency:go-offline
+      - run: mvn dependency:go-offline -Dbuild=$CIRCLE_BUILD_NUM 
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
-      - run: mvn test
+      - run: mvn test -Dbuild=$CIRCLE_BUILD_NUM 
       - run: mvn clean package -Dbuild=$CIRCLE_BUILD_NUM -Dmaven.test.skip=true
       - store_artifacts:
           path: deploy
