@@ -10,7 +10,7 @@ jobs:
       - checkout
       - run:
           name: Analyze on SonarCloud
-          command: mvn verify sonar:sonar
+          command: mvn verify sonar:sonar -Dbuild=$CIRCLE_BUILD_NUM 
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
