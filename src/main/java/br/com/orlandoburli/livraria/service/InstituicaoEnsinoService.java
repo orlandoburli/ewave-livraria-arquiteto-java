@@ -19,6 +19,12 @@ import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 @Service
 public class InstituicaoEnsinoService {
 
+	private static final String INSTITUICAO_ENSINO_COM_USUARIOS_EXCEPTION = "exceptions.InstituicaoEnsinoComUsuariosException";
+
+	private static final String INSTITUICAO_ENSINO_NAO_INFORMADA_EXCEPTION = "exceptions.InstituicaoEnsinoNaoInformadaException";
+
+	private static final String INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION = "exceptions.InstituicaoEnsinoNaoEncontradaException";
+
 	@Autowired
 	private ConversionService conversionService;
 
@@ -46,7 +52,7 @@ public class InstituicaoEnsinoService {
 	public InstituicaoEnsinoDto get(Long id) throws InstituicaoEnsinoNaoEncontradaException {
 		InstituicaoEnsino entity = this.repository.findByIdAndStatus(id, Status.ATIVO)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
-						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
+						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 
 		return this.conversionService.convert(entity, InstituicaoEnsinoDto.class);
 	}
@@ -129,7 +135,7 @@ public class InstituicaoEnsinoService {
 
 		InstituicaoEnsino entity = this.repository.findById(id)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
-						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
+						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 
 		entity.setStatus(Status.INATIVO);
 
@@ -141,7 +147,7 @@ public class InstituicaoEnsinoService {
 			throws InstituicaoEnsinoNaoInformadaException {
 		if (instituicaoEnsino == null) {
 			throw new InstituicaoEnsinoNaoInformadaException(
-					messages.get("exceptions.InstituicaoEnsinoNaoInformadaException"));
+					messages.get(INSTITUICAO_ENSINO_NAO_INFORMADA_EXCEPTION));
 		}
 	}
 
@@ -159,7 +165,7 @@ public class InstituicaoEnsinoService {
 	private InstituicaoEnsino validaInstituicaoExistente(Long id) throws InstituicaoEnsinoNaoEncontradaException {
 		return this.repository.findByIdAndStatus(id, Status.ATIVO)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
-						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
+						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 	}
 
 	/**
@@ -175,7 +181,7 @@ public class InstituicaoEnsinoService {
 
 		if (count > 0) {
 			throw new InstituicaoEnsinoComUsuariosException(
-					messages.get("exceptions.InstituicaoEnsinoComUsuariosException", id));
+					messages.get(INSTITUICAO_ENSINO_COM_USUARIOS_EXCEPTION, id));
 		}
 	}
 

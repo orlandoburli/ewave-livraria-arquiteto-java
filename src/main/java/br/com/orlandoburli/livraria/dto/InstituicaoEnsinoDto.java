@@ -4,9 +4,11 @@ import java.io.Serializable;
 
 import br.com.orlandoburli.livraria.enums.Status;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class InstituicaoEnsinoDto implements Serializable {
 

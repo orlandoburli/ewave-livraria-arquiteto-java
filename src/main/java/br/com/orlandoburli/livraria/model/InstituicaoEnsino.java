@@ -17,7 +17,6 @@ import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
