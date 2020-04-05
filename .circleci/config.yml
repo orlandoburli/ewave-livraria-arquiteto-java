@@ -8,6 +8,9 @@ jobs:
       MAVEN_OPTS: -Xmx3200m
     steps:
       - checkout
+      - run:
+          name: Analyze on SonarCloud
+          command: mvn verify sonar:sonar
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
@@ -27,6 +30,7 @@ workflows:
   api_build:
     jobs: 
       - build:
+          context: SonarCloud
           filters:
             branches:
               only:

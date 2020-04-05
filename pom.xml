@@ -18,6 +18,9 @@
 	<properties>
 		<java.version>11</java.version>
 		<jacoco.version>0.8.2</jacoco.version>
+		<sonar.projectKey>orlandoburli_ewave-livraria-arquiteto-java</sonar.projectKey>
+		<sonar.organization>orlandoburli</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 	</properties>
 
 	<dependencies>
