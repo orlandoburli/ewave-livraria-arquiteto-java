@@ -2,6 +2,8 @@
 
 Este projeto foi criado com o intuito de participar de um teste para a eWave.
 
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-white.svg)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+
 ## Arquitetura
 
 
@@ -34,10 +36,30 @@ Bibliotecas de teste:
 
 Foi configurado o CircleCI para build automatizada deste projeto, sendo seus artefatos armazenados na própria ferramenta.
 
+[![orlandoburli](https://circleci.com/gh/orlandoburli/ewave-livraria-arquiteto-java.svg?style=shield)](https://circleci.com/gh/orlandoburli/ewave-livraria-arquiteto-java.svg?style=shield)
+
 ## Testes automatizados / Code Coverage
 
-O objetivo é atingir uma cobertura de testes o mais próximo possível dos **100%**. Abaixo alguns resultados medidos durante o desenvolvimento deste teste.
+Neste projeto, configuramos o SonarCloud, que é o SonarQube na nuvem, que está gratuito para projetos open source. Podemos ver o resultado da qualidade do código no link abaixo.
+
+https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java
+
+Foi atingido o percentual de cobertura de [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=coverage)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java). 
 
 ## Code Quality
 
-Foi atingida a nota **"A"** de qualidade de código, eliminando todos os possíveis bug's analisados pelo sonarqube, bem como os possíveis *code smells* detectados.
+Foi atingida a nota [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java) de qualidade de código, eliminando todos os possíveis bug's analisados pelo sonarqube, bem como os possíveis *code smells* detectados.
+
+
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=bugs)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=code_smells)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=coverage)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=ncloc)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=security_rating)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=sqale_index)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java)
