@@ -29,6 +29,7 @@ import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.exceptions.LivrariaException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.InstituicaoEnsino;
 import br.com.orlandoburli.livraria.repository.InstituicaoEnsinoRepository;
@@ -47,20 +48,20 @@ public class InstituicaoEnsinoServiceTest {
 
 	@Autowired
 	private InstituicaoEnsinoService service;
-	
+
 	@Autowired
 	private InstituicaoEnsinoRepository repository;
 
 	@Autowired
 	private DbPrepareUtils dbPrepareUtils;
-	
+
 	@Autowired
 	private UsuarioService usuarioService;
-	
+
 	private Faker faker = new Faker(new Locale("pt", "BR"));
-	
+
 	private GeraCpfCnpj geradorCpfCnpj = new GeraCpfCnpj();
-	
+
 	@Test
 	public void deveCriarUmaEntidade() throws LivrariaException {
 
@@ -71,54 +72,56 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone("(65) 2333-2344")
 					.endereco("Av das Torres, 2344")
 				.build();
-		
+
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
 
 		assertThat(created, is(notNullValue()));
 		assertThat(created.getId(), is(notNullValue()));
 		assertThat(created.getId(), is(greaterThan(0L)));
-		
+
 		assertThat(created.getNome(), is(equalTo(instituicaoEnsinoDto.getNome())));
 		assertThat(created.getCnpj(), is(equalTo(Utils.numbersOnly(instituicaoEnsinoDto.getCnpj()))));
 		assertThat(created.getTelefone(), is(equalTo(Utils.numbersOnly(instituicaoEnsinoDto.getTelefone()))));
 		assertThat(created.getEndereco(), is(equalTo(instituicaoEnsinoDto.getEndereco())));
 		assertThat(created.getStatus(), is(equalTo(Status.ATIVO)));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComNomeNulo() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
 				.builder()
-				.nome(null)
-				.cnpj("23.519.978/0001-60")
-				.telefone("(65) 2333-2344")
-				.endereco("Av das Torres, 2344")
+					.nome(null)
+					.cnpj("23.519.978/0001-60")
+					.telefone("(65) 2333-2344")
+					.endereco("Av das Torres, 2344")
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("nome"));
-		
+
 		assertThat(exception.getErrors().get("nome"), hasItem("Nome é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComNomeVazio() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
 				.builder()
-				.nome("        ")
-				.cnpj(geradorCpfCnpj.cnpj())
-				.telefone(faker.phoneNumber().phoneNumber())
-				.endereco(faker.address().fullAddress())
+					.nome("        ")
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("nome"));
-		
+
 		assertThat(exception.getErrors().get("nome"), hasItem("Nome é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComNomeDeMaisDe100Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -128,14 +131,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().phoneNumber())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("nome"));
-		
+
 		assertThat(exception.getErrors().get("nome"), hasItem("Nome deve ter entre 3 e 100 caracteres"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComMenosDe3Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -145,14 +149,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().phoneNumber())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("nome"));
-		
+
 		assertThat(exception.getErrors().get("nome"), hasItem("Nome deve ter entre 3 e 100 caracteres"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComEnderecoNulo() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -162,14 +167,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(null)
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("endereco"));
-		
+
 		assertThat(exception.getErrors().get("endereco"), hasItem("Endereço é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComEnderecoVazio() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -179,14 +185,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco("   ")
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("endereco"));
-		
+
 		assertThat(exception.getErrors().get("endereco"), hasItem("Endereço é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComEnderecoComMaisDe100Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -196,14 +203,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(faker.lorem().characters(101, 150))
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("endereco"));
-		
+
 		assertThat(exception.getErrors().get("endereco"), hasItem("Endereço deve ter entre 3 e 100 caracteres"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComEnderecoComMenosDe3Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -213,14 +221,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(faker.lorem().characters(1, 2))
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("endereco"));
-		
+
 		assertThat(exception.getErrors().get("endereco"), hasItem("Endereço deve ter entre 3 e 100 caracteres"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComCnpjNulo() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -230,14 +239,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("cnpj"));
-		
+
 		assertThat(exception.getErrors().get("cnpj"), hasItem("Cnpj é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComCnpjVazio() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -247,14 +257,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("cnpj"));
-		
+
 		assertThat(exception.getErrors().get("cnpj"), hasItem("Cnpj é obrigatório"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComCnpjInvalido() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -264,14 +275,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.phoneNumber().cellPhone())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("cnpj"));
-		
+
 		assertThat(exception.getErrors().get("cnpj"), hasItem("Cnpj inválido"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComTelefoneComMenosDe10Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -281,14 +293,15 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.random().nextInt(1, 9).toString())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("telefone"));
-		
+
 		assertThat(exception.getErrors().get("telefone"), hasItem("Telefone inválido"));
 	}
-	
+
 	@Test
 	public void naoDeveCriarEntidadeComTelefoneComMaisDe11Caracteres() {
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
@@ -298,130 +311,114 @@ public class InstituicaoEnsinoServiceTest {
 					.telefone(faker.random().nextInt(12, 30).toString())
 					.endereco(faker.address().fullAddress())
 				.build();
-		
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () ->  service.create(instituicaoEnsinoDto));
-		
+
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+				() -> service.create(instituicaoEnsinoDto));
+
 		assertTrue(exception.getErrors().containsKey("telefone"));
-		
+
 		assertThat(exception.getErrors().get("telefone"), hasItem("Telefone inválido"));
 	}
-	
+
 	@Test
-	public void deveAtualizarInstituicao() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
-				.builder()
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-		
+	public void naoDeveCriarEntidadePassandoNulo() throws ValidationLivrariaException {
+		assertThrows(InstituicaoEnsinoNaoInformadaException.class, () -> service.create(null));
+	}
+
+	@Test
+	public void deveAtualizarInstituicao() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoNaoInformadaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().nome(faker.company().name())
+				.cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
+				.endereco(faker.address().fullAddress()).build();
+
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
-		
+
 		created.setNome("Novo nome da instituição");
-		
+
 		InstituicaoEnsinoDto updated = service.update(created);
-		
+
 		assertThat(updated.getId(), is(equalTo(created.getId())));
 		assertThat(updated.getNome(), is(equalTo(created.getNome())));
 	}
-	
+
 	@Test
 	public void naoDeveAtualizarEntidadeInexistente() {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
-				.builder()
-					.id(faker.number().randomNumber())
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-		
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
+				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
+				.endereco(faker.address().fullAddress()).build();
+
 		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.update(instituicaoEnsinoDto));
 	}
-	
+
 	@Test
-	public void deveInativarInstituicaoEnsino() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
-				.builder()
-					.id(faker.number().randomNumber())
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-		
+	public void deveInativarInstituicaoEnsino() throws ValidationLivrariaException,
+			InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException, InstituicaoEnsinoNaoInformadaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
+				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
+				.endereco(faker.address().fullAddress()).build();
+
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
-		
+
 		service.destroy(created.getId());
-		
+
 		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> this.service.get(created.getId()));
-		
-		InstituicaoEnsino entityDestroyed = repository.findById(created.getId()).orElseThrow(InstituicaoEnsinoNaoEncontradaException::new);
-		
+
+		InstituicaoEnsino entityDestroyed = repository.findById(created.getId())
+				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(""));
+
 		assertThat(entityDestroyed, is(notNullValue()));
 		assertThat(entityDestroyed.getId(), is(equalTo(created.getId())));
 		assertThat(entityDestroyed.getStatus(), is(equalTo(Status.INATIVO)));
 	}
-	
+
 	@Test
 	public void naoDeveInativarInstituicaoEnsinoInexistente() {
 		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.destroy(faker.random().nextLong()));
 	}
-	
+
 	@Test
-	public void naoDeveInativarInstituicaoEnsinoComUsuarios() throws ValidationLivrariaException {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
-				.builder()
-					.id(faker.number().randomNumber())
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-		
+	public void naoDeveInativarInstituicaoEnsinoComUsuarios() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
+				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
+				.endereco(faker.address().fullAddress()).build();
+
 		InstituicaoEnsinoDto instituicaoCriada = this.service.create(instituicaoEnsinoDto);
-		
-		UsuarioDto usuario = UsuarioDto
-			.builder()
-				.nome(faker.name().fullName())
-				.endereco(faker.address().fullAddress())
-				.cpf(geradorCpfCnpj.cpf())
-				.telefone(faker.phoneNumber().cellPhone())
-				.email(faker.internet().emailAddress())
-				.instituicao(instituicaoCriada)
-			.build();
-		
+
+		UsuarioDto usuario = UsuarioDto.builder().nome(faker.name().fullName()).endereco(faker.address().fullAddress())
+				.cpf(geradorCpfCnpj.cpf()).telefone(faker.phoneNumber().cellPhone())
+				.email(faker.internet().emailAddress()).instituicao(instituicaoCriada).build();
+
 		usuario = this.usuarioService.create(usuario);
-		
+
 		assertThrows(InstituicaoEnsinoComUsuariosException.class, () -> service.destroy(instituicaoCriada.getId()));
 	}
 	
 	@Test
-	public void deveRetornarInstituicaoEnsino() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException {
-		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
-				.builder()
-					.id(faker.number().randomNumber())
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-		
+	public void naoDeveAtualizarEntidadePassandoNulo() throws ValidationLivrariaException {
+		assertThrows(InstituicaoEnsinoNaoInformadaException.class, () -> service.update(null));
+	}
+
+	@Test
+	public void deveRetornarInstituicaoEnsino()
+			throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoNaoInformadaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().id(faker.number().randomNumber())
+				.nome(faker.company().name()).cnpj(geradorCpfCnpj.cnpj()).telefone(faker.phoneNumber().cellPhone())
+				.endereco(faker.address().fullAddress()).build();
+
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
-		
+
 		InstituicaoEnsinoDto founded = service.get(created.getId());
-		
+
 		assertThat(founded, is(notNullValue()));
 		assertThat(founded.getId(), is(equalTo(created.getId())));
 		assertThat(founded.getStatus(), is(equalTo(Status.ATIVO)));
 	}
-	
+
 	@Test
 	public void naoDeveEncontrarInstituicaoEnsino() {
 		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.get(faker.random().nextLong()));
 	}
-	
+
 	@BeforeEach
 	public void prepare() {
 		this.dbPrepareUtils.clean();

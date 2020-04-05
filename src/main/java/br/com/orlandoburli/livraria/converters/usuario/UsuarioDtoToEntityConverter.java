@@ -19,10 +19,6 @@ public class UsuarioDtoToEntityConverter implements Converter<UsuarioDto, Usuari
 	
 	@Override
 	public Usuario convert(UsuarioDto source) {
-		if (source == null) {
-			return null;
-		}
-		
 		return Usuario
 				.builder()
 					.id(source.getId())

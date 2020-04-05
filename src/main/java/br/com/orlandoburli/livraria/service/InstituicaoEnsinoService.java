@@ -8,10 +8,12 @@ import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.InstituicaoEnsino;
 import br.com.orlandoburli.livraria.repository.InstituicaoEnsinoRepository;
 import br.com.orlandoburli.livraria.repository.UsuarioRepository;
+import br.com.orlandoburli.livraria.utils.MessagesService;
 import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 
 @Service
@@ -29,6 +31,9 @@ public class InstituicaoEnsinoService {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
+	@Autowired
+	private MessagesService messages;
+
 	/**
 	 * Retorna uma instituição de ensino pelo Id.
 	 * 
@@ -40,7 +45,8 @@ public class InstituicaoEnsinoService {
 	 */
 	public InstituicaoEnsinoDto get(Long id) throws InstituicaoEnsinoNaoEncontradaException {
 		InstituicaoEnsino entity = this.repository.findByIdAndStatus(id, Status.ATIVO)
-				.orElseThrow(InstituicaoEnsinoNaoEncontradaException::new);
+				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
+						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
 
 		return this.conversionService.convert(entity, InstituicaoEnsinoDto.class);
 	}
@@ -50,10 +56,16 @@ public class InstituicaoEnsinoService {
 	 * 
 	 * @param instituicaoEnsino Instituição de ensino a ser criada.
 	 * @return Instituição de ensino criada, com id populado.
-	 * @throws ValidationLivrariaException Exceção disparada se ocorrerem erros de
-	 *                                     validação dos dados.
+	 * @throws ValidationLivrariaException            Exceção disparada se ocorrerem
+	 *                                                erros de validação dos dados.
+	 * @throws InstituicaoEnsinoNaoInformadaException Exceção disparada quando a
+	 *                                                instituição de ensino for
+	 *                                                totalmente nula.
 	 */
-	public InstituicaoEnsinoDto create(InstituicaoEnsinoDto instituicaoEnsino) throws ValidationLivrariaException {
+	public InstituicaoEnsinoDto create(InstituicaoEnsinoDto instituicaoEnsino)
+			throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+
+		validaCorpoInstituicaoEnsino(instituicaoEnsino);
 
 		instituicaoEnsino.setStatus(Status.ATIVO);
 
@@ -77,9 +89,15 @@ public class InstituicaoEnsinoService {
 	 *                                                 informado.
 	 * @throws ValidationLivrariaException             Exceção disparada se ocorrer
 	 *                                                 erro de validação dos dados
+	 * @throws InstituicaoEnsinoNaoInformadaException  Exceção disparada quando a
+	 *                                                 instituição de ensino for
+	 *                                                 totalmente nula.
 	 */
 	public InstituicaoEnsinoDto update(InstituicaoEnsinoDto instituicaoEnsino)
-			throws InstituicaoEnsinoNaoEncontradaException, ValidationLivrariaException {
+			throws InstituicaoEnsinoNaoEncontradaException, ValidationLivrariaException,
+			InstituicaoEnsinoNaoInformadaException {
+
+		validaCorpoInstituicaoEnsino(instituicaoEnsino);
 
 		validaInstituicaoExistente(instituicaoEnsino.getId());
 
@@ -110,12 +128,21 @@ public class InstituicaoEnsinoService {
 		validaUsuariosExistentes(id);
 
 		InstituicaoEnsino entity = this.repository.findById(id)
-				.orElseThrow(InstituicaoEnsinoNaoEncontradaException::new);
+				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
+						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
 
 		entity.setStatus(Status.INATIVO);
 
 		this.repository.save(entity);
 
+	}
+
+	private void validaCorpoInstituicaoEnsino(InstituicaoEnsinoDto instituicaoEnsino)
+			throws InstituicaoEnsinoNaoInformadaException {
+		if (instituicaoEnsino == null) {
+			throw new InstituicaoEnsinoNaoInformadaException(
+					messages.get("exceptions.InstituicaoEnsinoNaoInformadaException"));
+		}
 	}
 
 	/**
@@ -130,7 +157,9 @@ public class InstituicaoEnsinoService {
 	 *                                                 informado.
 	 */
 	private InstituicaoEnsino validaInstituicaoExistente(Long id) throws InstituicaoEnsinoNaoEncontradaException {
-		return this.repository.findByIdAndStatus(id, Status.ATIVO).orElseThrow(InstituicaoEnsinoNaoEncontradaException::new);
+		return this.repository.findByIdAndStatus(id, Status.ATIVO)
+				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
+						messages.get("exceptions.InstituicaoEnsinoNaoEncontradaException", id)));
 	}
 
 	/**
@@ -145,7 +174,8 @@ public class InstituicaoEnsinoService {
 		Long count = this.usuarioRepository.countByInstituicaoId(id);
 
 		if (count > 0) {
-			throw new InstituicaoEnsinoComUsuariosException("");
+			throw new InstituicaoEnsinoComUsuariosException(
+					messages.get("exceptions.InstituicaoEnsinoComUsuariosException", id));
 		}
 	}
 
