@@ -6,6 +6,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
+import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.model.Usuario;
 import br.com.orlandoburli.livraria.repository.InstituicaoEnsinoRepository;
 import br.com.orlandoburli.livraria.utils.Utils;
@@ -27,7 +28,8 @@ public class UsuarioDtoToEntityConverter implements Converter<UsuarioDto, Usuari
 					.cpf(Utils.numbersOnly(source.getCpf()))
 					.telefone(Utils.numbersOnly(source.getTelefone()))
 					.email(source.getEmail())
-					.instituicao(source.getInstituicao() != null ? instituicaoEnsinoRepository.getOne(source.getInstituicao().getId()) : null)
+					.instituicao(source.getInstituicao() != null && source.getInstituicao().getId() != null ? 
+							instituicaoEnsinoRepository.findByIdAndStatus(source.getInstituicao().getId(), Status.ATIVO).orElse(null) :null)
 					.status(source.getStatus())
 				.build();
 	}

@@ -40,16 +40,18 @@ public class Usuario {
 	private Long id;
 
 	@NotBlank(message = "{javax.validations.usuario.nome.notBlank}")
+	@Size(min = 3, max = 100, message = "{javax.validations.usuario.nome.size}")
 	private String nome;
 
 	@NotBlank(message = "{javax.validations.usuario.endereco.notBlank}")
+	@Size(min = 3, max = 100, message = "{javax.validations.usuario.endereco.size}")
 	private String endereco;
 
 	@CPF(message = "{javax.validations.usuario.cpf.invalid}")
 	@NotBlank(message = "{javax.validations.usuario.cpf.notBlank}")
 	private String cpf;
 
-	@Pattern(regexp = "^[0-9]{10,11}$", message = "javax.validations.usuario.telefone.invalid")
+	@Pattern(regexp = "^[0-9]{10,11}$", message = "{javax.validations.usuario.telefone.invalid}")
 	private String telefone;
 
 	@Email(message = "{javax.validations.usuario.email.invalid}")
@@ -59,7 +61,7 @@ public class Usuario {
 	@ManyToOne(optional = false)
 	@NotNull(message = "{javax.validations.usuario.instituicao.notNull}")
 	private InstituicaoEnsino instituicao;
-	
+
 	@NotNull(message = "{javax.validations.usuario.status.notNull}")
 	private Status status;
 }

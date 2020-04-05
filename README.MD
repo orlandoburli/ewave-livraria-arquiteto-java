@@ -40,7 +40,7 @@ https://app.circleci.com/pipelines/github/orlandoburli/ewave-livraria-arquiteto-
 
 [![orlandoburli](https://circleci.com/gh/orlandoburli/ewave-livraria-arquiteto-java.svg?style=shield)](https://circleci.com/gh/orlandoburli/ewave-livraria-arquiteto-java.svg?style=shield)
 
-## Testes automatizados / Code Coverage
+## Testes automatizados
 
 Neste projeto, escrevemos os testes em dois níveis: *Service* e *Controller*. 
 
@@ -50,7 +50,7 @@ Já em *Controller*, testamos as API's REST e suas fronteiras, testando o dado q
 
 Foi atingido o percentual de cobertura de [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=orlandoburli_ewave-livraria-arquiteto-java&metric=coverage)](https://sonarcloud.io/dashboard?id=orlandoburli_ewave-livraria-arquiteto-java). 
 
-## Code Quality
+## Code Quality / Code Coverage
 
 Neste projeto, configuramos o SonarCloud, que é o SonarQube na nuvem, que está gratuito para projetos open source. Podemos ver o resultado da qualidade do código no link abaixo.
 
