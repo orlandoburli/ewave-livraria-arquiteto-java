@@ -15,13 +15,17 @@ import org.hibernate.validator.constraints.br.CNPJ;
 
 import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.utils.Constants;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "instituicao_ensino", schema = Constants.SCHEMA)
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class InstituicaoEnsino {
 
 	private static final String SEQUENCE_NAME = "seq_instituicao_ensino";

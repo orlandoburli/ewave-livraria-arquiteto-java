@@ -19,14 +19,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.javafaker.Faker;
 
 import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
+import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.exceptions.LivrariaException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
+import br.com.orlandoburli.livraria.model.InstituicaoEnsino;
+import br.com.orlandoburli.livraria.repository.InstituicaoEnsinoRepository;
 import br.com.orlandoburli.livraria.service.InstituicaoEnsinoService;
+import br.com.orlandoburli.livraria.service.UsuarioService;
 import br.com.orlandoburli.livraria.utils.DbPrepareUtils;
 import br.com.orlandoburli.livraria.utils.GeraCpfCnpj;
 import br.com.orlandoburli.livraria.utils.Utils;
@@ -35,13 +42,20 @@ import br.com.orlandoburli.livraria.utils.Utils;
 @AutoConfigureMockMvc
 @EnableAutoConfiguration
 @TestPropertySource(locations = "classpath:application.yml")
+@Transactional
 public class InstituicaoEnsinoServiceTest {
 
 	@Autowired
 	private InstituicaoEnsinoService service;
+	
+	@Autowired
+	private InstituicaoEnsinoRepository repository;
 
 	@Autowired
 	private DbPrepareUtils dbPrepareUtils;
+	
+	@Autowired
+	private UsuarioService usuarioService;
 	
 	private Faker faker = new Faker(new Locale("pt", "BR"));
 	
@@ -52,10 +66,10 @@ public class InstituicaoEnsinoServiceTest {
 
 		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
 				.builder()
-				.nome("Faculdade das Américas")
-				.cnpj("23.519.978/0001-60")
-				.telefone("(65) 2333-2344")
-				.endereco("Av das Torres, 2344")
+					.nome("Faculdade das Américas")
+					.cnpj("23.519.978/0001-60")
+					.telefone("(65) 2333-2344")
+					.endereco("Av das Torres, 2344")
 				.build();
 		
 		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
@@ -290,6 +304,122 @@ public class InstituicaoEnsinoServiceTest {
 		assertTrue(exception.getErrors().containsKey("telefone"));
 		
 		assertThat(exception.getErrors().get("telefone"), hasItem("Telefone inválido"));
+	}
+	
+	@Test
+	public void deveAtualizarInstituicao() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+		
+		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
+		
+		created.setNome("Novo nome da instituição");
+		
+		InstituicaoEnsinoDto updated = service.update(created);
+		
+		assertThat(updated.getId(), is(equalTo(created.getId())));
+		assertThat(updated.getNome(), is(equalTo(created.getNome())));
+	}
+	
+	@Test
+	public void naoDeveAtualizarEntidadeInexistente() {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.id(faker.number().randomNumber())
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+		
+		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.update(instituicaoEnsinoDto));
+	}
+	
+	@Test
+	public void deveInativarInstituicaoEnsino() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.id(faker.number().randomNumber())
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+		
+		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
+		
+		service.destroy(created.getId());
+		
+		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> this.service.get(created.getId()));
+		
+		InstituicaoEnsino entityDestroyed = repository.findById(created.getId()).orElseThrow(InstituicaoEnsinoNaoEncontradaException::new);
+		
+		assertThat(entityDestroyed, is(notNullValue()));
+		assertThat(entityDestroyed.getId(), is(equalTo(created.getId())));
+		assertThat(entityDestroyed.getStatus(), is(equalTo(Status.INATIVO)));
+	}
+	
+	@Test
+	public void naoDeveInativarInstituicaoEnsinoInexistente() {
+		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.destroy(faker.random().nextLong()));
+	}
+	
+	@Test
+	public void naoDeveInativarInstituicaoEnsinoComUsuarios() throws ValidationLivrariaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.id(faker.number().randomNumber())
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+		
+		InstituicaoEnsinoDto instituicaoCriada = this.service.create(instituicaoEnsinoDto);
+		
+		UsuarioDto usuario = UsuarioDto
+			.builder()
+				.nome(faker.name().fullName())
+				.endereco(faker.address().fullAddress())
+				.cpf(geradorCpfCnpj.cpf())
+				.telefone(faker.phoneNumber().cellPhone())
+				.email(faker.internet().emailAddress())
+				.instituicao(instituicaoCriada)
+			.build();
+		
+		usuario = this.usuarioService.create(usuario);
+		
+		assertThrows(InstituicaoEnsinoComUsuariosException.class, () -> service.destroy(instituicaoCriada.getId()));
+	}
+	
+	@Test
+	public void deveRetornarInstituicaoEnsino() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException {
+		InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.id(faker.number().randomNumber())
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+		
+		InstituicaoEnsinoDto created = service.create(instituicaoEnsinoDto);
+		
+		InstituicaoEnsinoDto founded = service.get(created.getId());
+		
+		assertThat(founded, is(notNullValue()));
+		assertThat(founded.getId(), is(equalTo(created.getId())));
+		assertThat(founded.getStatus(), is(equalTo(Status.ATIVO)));
+	}
+	
+	@Test
+	public void naoDeveEncontrarInstituicaoEnsino() {
+		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.get(faker.random().nextLong()));
 	}
 	
 	@BeforeEach

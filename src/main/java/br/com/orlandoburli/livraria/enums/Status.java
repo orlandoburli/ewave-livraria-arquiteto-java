@@ -25,8 +25,8 @@ public enum Status {
 	@JsonCreator
 	public static Status from(final String requisicao) {
 		for (final Status s : Status.values()) {
-			if (s.getValor().toString().equals(requisicao) || s.getDescricao().equalsIgnoreCase(requisicao)
-					|| s.getValor().toString().equalsIgnoreCase(requisicao)) {
+			if (s.getValor().equals(requisicao) || s.getDescricao().equalsIgnoreCase(requisicao)
+					|| s.getValor().equalsIgnoreCase(requisicao)) {
 				return s;
 			}
 		}

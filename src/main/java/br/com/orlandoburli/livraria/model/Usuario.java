@@ -11,21 +11,30 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.br.CPF;
 
+import br.com.orlandoburli.livraria.enums.Status;
+import br.com.orlandoburli.livraria.utils.Constants;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "usuario")
+@Table(name = "usuario", schema = Constants.SCHEMA)
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Usuario {
 
 	private static final String SEQUENCE_NAME = "seq_usuario";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = SEQUENCE_NAME)
-	@SequenceGenerator(sequenceName = SEQUENCE_NAME, name = SEQUENCE_NAME)
+	@SequenceGenerator(sequenceName = SEQUENCE_NAME, name = SEQUENCE_NAME, schema = Constants.SCHEMA)
 	private Long id;
 
 	@NotBlank(message = "{javax.validations.usuario.nome.notBlank}")
@@ -37,14 +46,18 @@ public class Usuario {
 	@CPF(message = "{javax.validations.usuario.cpf.invalid}")
 	@NotBlank(message = "{javax.validations.usuario.cpf.notBlank}")
 	private String cpf;
-	
-	@Pattern(regexp = "^[0-9]{8,9}$", message = "javax.validations.usuario.telefone.invalid")
+
+	@Pattern(regexp = "^[0-9]{10,11}$", message = "javax.validations.usuario.telefone.invalid")
 	private String telefone;
-	
+
 	@Email(message = "{javax.validations.usuario.email.invalid}")
+	@Size(max = 200, message = "{javax.validations.usuario.email.size}")
 	private String email;
 
 	@ManyToOne(optional = false)
 	@NotNull(message = "{javax.validations.usuario.instituicao.notNull}")
-	private InstituicaoEnsino instituicao;	
+	private InstituicaoEnsino instituicao;
+	
+	@NotNull(message = "{javax.validations.usuario.status.notNull}")
+	private Status status;
 }

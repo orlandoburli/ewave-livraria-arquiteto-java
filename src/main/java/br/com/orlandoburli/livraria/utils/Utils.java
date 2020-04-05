@@ -4,8 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public final class Utils {
 
+	private Utils() {
+	}
+
 	/**
 	 * Remove todos os caracteres não-numéricos de uma string
+	 * 
 	 * @param source String a ser tratada
 	 * @return string somente com números
 	 */

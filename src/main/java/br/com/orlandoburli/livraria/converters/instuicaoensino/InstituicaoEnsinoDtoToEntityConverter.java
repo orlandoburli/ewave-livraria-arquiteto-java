@@ -12,6 +12,10 @@ public class InstituicaoEnsinoDtoToEntityConverter implements Converter<Institui
 
 	@Override
 	public InstituicaoEnsino convert(InstituicaoEnsinoDto source) {
+		if (source == null) {
+			return null;
+		}
+		
 		return InstituicaoEnsino
 				.builder()
 					.id(source.getId())
