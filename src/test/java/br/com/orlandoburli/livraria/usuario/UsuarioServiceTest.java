@@ -102,7 +102,16 @@ public class UsuarioServiceTest {
 				.instituicao(createInstituicaoEnsino())
 			.build();
 		
-		this.service.create(usuarioDto);
+		UsuarioDto created = this.service.create(usuarioDto);
+		
+		assertThat(created, is(notNullValue()));
+		assertThat(created.getId(), is(greaterThan(0L)));
+		assertThat(created.getNome(), is(equalTo(usuarioDto.getNome())));
+		assertThat(created.getEndereco(), is(equalTo(usuarioDto.getEndereco())));
+		assertThat(created.getCpf(), is(equalTo(Utils.numbersOnly(usuarioDto.getCpf()))));
+		assertThat(created.getTelefone(), is(equalTo(Utils.numbersOnly(usuarioDto.getTelefone()))));
+		assertThat(created.getInstituicao(), is(notNullValue()));
+		assertThat(created.getInstituicao().getId(), is(equalTo(usuarioDto.getInstituicao().getId())));
 	}
 	
 	@Test
@@ -116,7 +125,16 @@ public class UsuarioServiceTest {
 				.instituicao(createInstituicaoEnsino())
 			.build();
 		
-		this.service.create(usuarioDto);
+		UsuarioDto created = this.service.create(usuarioDto);
+		
+		assertThat(created, is(notNullValue()));
+		assertThat(created.getId(), is(greaterThan(0L)));
+		assertThat(created.getNome(), is(equalTo(usuarioDto.getNome())));
+		assertThat(created.getEndereco(), is(equalTo(usuarioDto.getEndereco())));
+		assertThat(created.getCpf(), is(equalTo(Utils.numbersOnly(usuarioDto.getCpf()))));
+		assertThat(created.getTelefone(), is(equalTo(Utils.numbersOnly(usuarioDto.getTelefone()))));
+		assertThat(created.getInstituicao(), is(notNullValue()));
+		assertThat(created.getInstituicao().getId(), is(equalTo(usuarioDto.getInstituicao().getId())));
 	}
 	
 	@Test
