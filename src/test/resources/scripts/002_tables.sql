@@ -1,6 +1,7 @@
 CREATE SEQUENCE livraria.seq_instituicao_ensino START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_usuario START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_livro START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE livraria.seq_emprestimo START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE livraria.instituicao_ensino (
 	id number(8) not null,
@@ -40,4 +41,17 @@ CREATE TABLE livraria.capa (
 	imagem blob,
 	CONSTRAINT pk_capa PRIMARY KEY (id),
 	CONSTRAINT fk_capa_livro FOREIGN KEY (id) REFERENCES livraria.capa (id)
+);
+
+CREATE TABLE livraria.emprestimo (
+	id number(8) not null,
+	usuario_id number(8) not null,
+	livro_id number(8) not null,
+	data_emprestimo date not null,
+	data_devolucao date,
+	status char(1) not null,
+	CONSTRAINT pk_emprestimo PRIMARY KEY (id),
+	CONSTRAINT fk_emprestimo_usuario FOREIGN KEY (usuario_id) REFERENCES livraria.usuario(id),
+	CONSTRAINT fk_emprestimo_livro FOREIGN KEY (livro_id) REFERENCES livraria.livro(id)
+	
 );

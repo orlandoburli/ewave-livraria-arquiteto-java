@@ -9,7 +9,7 @@ Este projeto foi criado com o intuito de participar de um teste para a eWave.
 
 ### Versão Java
 
-Foi utilizado o OpenJ9 11 para o desenvolvimento deste teste.
+Foi utilizado o OpenJ9 (JDK 11) para o desenvolvimento deste teste.
 
 ### Frameworks
 
@@ -31,6 +31,14 @@ Bibliotecas de teste:
   * **org.hamcrest** - Extensões das bibliotecas de Matcher's do JUnit (Já está embutido no spring-boot-starter-test)
   * **h2** - Driver do banco H2, utilizado para os testes unitários.
   * **javafaker** - Biblioteca utilitária para geração de dados aleatórios para testes.
+
+### Definição de pacotes
+
+### Modelo de dados
+
+<figure class="video_container">
+  <iframe width="560" height="315" src='https://dbdiagram.io/embed/5e285bfd9e76504e0ef08a7c'></iframe>
+</figure>
 
 ## CI/CD
 

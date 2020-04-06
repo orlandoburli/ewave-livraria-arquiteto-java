@@ -662,8 +662,7 @@ public class UsuarioServiceTest {
 					.endereco("Av das Torres, 2344")
 				.build();
 
-		InstituicaoEnsinoDto instituicao = instituicaoEnsinoService.create(instituicaoEnsinoDto);
-		return instituicao;
+		return instituicaoEnsinoService.create(instituicaoEnsinoDto);
 	}
 	
 	private InstituicaoEnsinoDto createInstituicaoEnsinoInativa() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
