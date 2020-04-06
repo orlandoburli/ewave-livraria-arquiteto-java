@@ -10,6 +10,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaExc
 
 @Component
 public class ValidatorUtils {
-	
+
 	@Autowired
 	private ValidatorFactory factory;
 
@@ -39,7 +40,10 @@ public class ValidatorUtils {
 					errosField = new HashSet<>();
 				}
 				errosField.add(cv.getMessage());
-				errors.put(cv.getPropertyPath().toString(), errosField);
+
+				String key = cv.getPropertyPath().toString();
+				
+				errors.put(StringUtils.isEmpty(key) ? "entity" : key, errosField);
 			}
 
 			throw new ValidationLivrariaException("Erro ao salvar dados", errors);

@@ -92,6 +92,34 @@ public class UsuarioServiceTest {
 	}
 	
 	@Test
+	public void deveCriarUmUsuarioComEmailSemTelefone() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, UsuarioNaoInformadoException {
+		UsuarioDto usuarioDto = UsuarioDto
+			.builder()
+				.nome(faker.name().fullName())
+				.endereco(faker.address().fullAddress())
+				.cpf(geradorCpfCnpj.cpf())
+				.email(faker.internet().emailAddress())
+				.instituicao(createInstituicaoEnsino())
+			.build();
+		
+		this.service.create(usuarioDto);
+	}
+	
+	@Test
+	public void deveCriarUmUsuarioSemEmailComTelefone() throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, UsuarioNaoInformadoException {
+		UsuarioDto usuarioDto = UsuarioDto
+			.builder()
+				.nome(faker.name().fullName())
+				.endereco(faker.address().fullAddress())
+				.cpf(geradorCpfCnpj.cpf())
+				.telefone(faker.phoneNumber().cellPhone())
+				.instituicao(createInstituicaoEnsino())
+			.build();
+		
+		this.service.create(usuarioDto);
+	}
+	
+	@Test
 	public void naoDeveCriarUmUsuarioNulo() {
 		assertThrows(UsuarioNaoInformadoException.class, () -> service.create(null));
 	}
@@ -464,6 +492,25 @@ public class UsuarioServiceTest {
 		assertTrue(exception.getErrors().containsKey("instituicao"));
 
 		assertThat(exception.getErrors().get("instituicao"), hasItem("Instituição é obrigatória"));
+	}
+	
+	@Test
+	public void naoDeveCriarUmUsuarioSemEmailOuTelefone() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
+		UsuarioDto usuarioDto = UsuarioDto
+			.builder()
+				.nome(faker.name().fullName())
+				.endereco(faker.address().fullAddress())
+				.cpf(geradorCpfCnpj.cpf())
+				.instituicao(createInstituicaoEnsino())
+			.build();
+		
+		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class, () -> service.create(usuarioDto));
+		
+		System.out.println(exception.getErrors());
+		
+		assertTrue(exception.getErrors().containsKey("entity"));
+
+		assertThat(exception.getErrors().get("entity"), hasItem("Usuário precisa ter email ou telefone preenchidos"));
 	}
 	
 	@Test

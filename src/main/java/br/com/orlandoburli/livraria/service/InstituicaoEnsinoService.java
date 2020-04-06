@@ -78,6 +78,8 @@ public class InstituicaoEnsinoService {
 		InstituicaoEnsino entity = this.conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
+		
+		// TODO Validar repeticao de cnpj e email
 
 		InstituicaoEnsino saved = repository.save(entity);
 
@@ -110,6 +112,8 @@ public class InstituicaoEnsinoService {
 		InstituicaoEnsino entity = this.conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
+		
+		// TODO Validar repeticao de cnpj e email
 
 		InstituicaoEnsino saved = repository.save(entity);
 

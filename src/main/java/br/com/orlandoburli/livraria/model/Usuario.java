@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.br.CPF;
 
+import br.com.orlandoburli.livraria.constraints.annotations.UsuarioDeveTerEmailOuTelefone;
 import br.com.orlandoburli.livraria.enums.Status;
 import br.com.orlandoburli.livraria.utils.Constants;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@UsuarioDeveTerEmailOuTelefone
 public class Usuario {
 
 	private static final String SEQUENCE_NAME = "seq_usuario";
@@ -51,7 +53,7 @@ public class Usuario {
 	@NotBlank(message = "{javax.validations.usuario.cpf.notBlank}")
 	private String cpf;
 
-	@Pattern(regexp = "^[0-9]{10,11}$", message = "{javax.validations.usuario.telefone.invalid}")
+	@Pattern(regexp = "^$|^[0-9]{10,11}$", message = "{javax.validations.usuario.telefone.invalid}")
 	private String telefone;
 
 	@Email(message = "{javax.validations.usuario.email.invalid}")

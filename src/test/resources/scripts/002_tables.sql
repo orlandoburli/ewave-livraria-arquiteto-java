@@ -1,5 +1,6 @@
 CREATE SEQUENCE livraria.seq_instituicao_ensino START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_usuario START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE livraria.seq_livro START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE livraria.instituicao_ensino (
 	id number(8) not null,
@@ -22,4 +23,14 @@ CREATE TABLE livraria.usuario (
 	status char(1) not null,
 	CONSTRAINT pk_usuario PRIMARY KEY (id),
 	CONSTRAINT fk_usuario_instituicao_ensino FOREIGN KEY (instituicao_id) REFERENCES livraria.instituicao_ensino(id)
+);
+
+CREATE TABLE livraria.livro (
+	id number(8) not null,
+	titulo varchar(100),
+	genero varchar(100),
+	autor varchar(100),
+	sinopse varchar(1000),
+	status char(1) not null,
+	CONSTRAINT pk_livro PRIMARY KEY (id)
 );

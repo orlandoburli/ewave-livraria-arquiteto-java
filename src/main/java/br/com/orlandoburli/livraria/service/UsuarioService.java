@@ -42,10 +42,7 @@ public class UsuarioService {
 	 *                                       seja encontrado com o id informado.
 	 */
 	public UsuarioDto get(Long id) throws UsuarioNaoEncontradoException {
-		Usuario entity = this.repository.findByIdAndStatus(id, Status.ATIVO).orElseThrow(
-				() -> new UsuarioNaoEncontradoException(messages.get(USUARIO_NAO_ENCONTRADO_EXCEPTION, id)));
-
-		return this.conversionService.convert(entity, UsuarioDto.class);
+		return this.conversionService.convert(validaUsuarioExistente(id), UsuarioDto.class);
 	}
 
 	/**
@@ -67,6 +64,8 @@ public class UsuarioService {
 		Usuario entity = conversionService.convert(usuario, Usuario.class);
 
 		validatorUtils.validate(entity);
+		
+		// TODO Valida repetição de cpf e email
 
 		Usuario created = repository.save(entity);
 
@@ -93,8 +92,10 @@ public class UsuarioService {
 		validaUsuarioExistente(usuario.getId());
 
 		Usuario entity = this.conversionService.convert(usuario, Usuario.class);
-
+	
 		validatorUtils.validate(entity);
+		
+		// TODO Valida repetição de cpf e email
 
 		Usuario saved = repository.save(entity);
 
@@ -111,8 +112,7 @@ public class UsuarioService {
 	public void destroy(Long id) throws UsuarioNaoEncontradoException {
 		validaUsuarioPossuiEmprestimos(id);
 
-		Usuario entity = this.repository.findById(id).orElseThrow(
-				() -> new UsuarioNaoEncontradoException(messages.get(USUARIO_NAO_ENCONTRADO_EXCEPTION, id)));
+		Usuario entity = validaUsuarioExistente(id);
 
 		entity.setStatus(Status.INATIVO);
 
@@ -121,7 +121,6 @@ public class UsuarioService {
 
 	private void validaUsuarioPossuiEmprestimos(Long id) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -145,10 +144,8 @@ public class UsuarioService {
 	 *                                      nulo
 	 */
 	private void validaCorpoUsuario(UsuarioDto usuario) throws UsuarioNaoInformadoException {
-
 		if (usuario == null) {
 			throw new UsuarioNaoInformadoException(messages.get(USUARIO_NAO_INFORMADO_EXCEPTION));
 		}
-
 	}
 }

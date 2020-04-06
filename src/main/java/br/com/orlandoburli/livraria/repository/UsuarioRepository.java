@@ -14,4 +14,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 	Long countByInstituicaoId(Long id);
 
 	Optional<Usuario> findByIdAndStatus(Long id, Status status);
+	
+	Optional<Usuario> findByCpfAndIdNot(String cpf, Long id);
 }

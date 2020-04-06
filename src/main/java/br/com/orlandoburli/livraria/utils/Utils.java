@@ -4,9 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 public final class Utils {
 
-	private Utils() {
-	}
-
 	/**
 	 * Remove todos os caracteres não-numéricos de uma string
 	 * 
