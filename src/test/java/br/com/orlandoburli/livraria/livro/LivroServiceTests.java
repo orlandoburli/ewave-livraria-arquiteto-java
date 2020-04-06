@@ -76,6 +76,11 @@ public class LivroServiceTests {
 	}
 
 	@Test
+	public void naoDeveCriarUmLivroNulo() {
+		assertThrows(LivroNaoInformadoException.class, () -> service.create(null));
+	}
+
+	@Test
 	public void naoDeveCriarUmLivroComTituloNulo() {
 		LivroDto livro = buildLivroRandom();
 
@@ -377,7 +382,7 @@ public class LivroServiceTests {
 
 		assertThrows(CapaNaoInformadaException.class, () -> service.saveCapa(created.getId(), null));
 	}
-	
+
 	@Test
 	public void naoDeveCriarCapaLivroComMenosDe10Bytes()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
@@ -386,7 +391,8 @@ public class LivroServiceTests {
 
 		LivroDto created = service.create(livro);
 
-		assertThrows(CapaNaoInformadaException.class, () -> service.saveCapa(created.getId(), faker.lorem().characters(1, 9).getBytes()));
+		assertThrows(CapaNaoInformadaException.class,
+				() -> service.saveCapa(created.getId(), faker.lorem().characters(1, 9).getBytes()));
 	}
 
 	@Test
@@ -404,6 +410,22 @@ public class LivroServiceTests {
 		service.destroyCapa(created.getId());
 
 		assertThrows(CapaNaoEncontradaException.class, () -> service.getCapa(created.getId()));
+	}
+	
+	@Test
+	public void naoDeveExcluirCapaNaoExistente()
+			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
+			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
+		LivroDto created = service.create(buildLivroRandom());
+
+		assertThrows(CapaNaoEncontradaException.class, () -> service.destroyCapa(created.getId()));
+	}
+	
+	@Test
+	public void naoDeveExcluirCapaCujoLivroNaoExiste()
+			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
+			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
+		assertThrows(LivroNaoEncontradoException.class, () -> service.destroyCapa(faker.random().nextLong()));
 	}
 
 	private LivroDto buildLivroRandom() {
