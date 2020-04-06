@@ -34,3 +34,10 @@ CREATE TABLE livraria.livro (
 	status char(1) not null,
 	CONSTRAINT pk_livro PRIMARY KEY (id)
 );
+
+CREATE TABLE livraria.capa (
+	id number(8) not null,
+	imagem blob,
+	CONSTRAINT pk_capa PRIMARY KEY (id),
+	CONSTRAINT fk_capa_livro FOREIGN KEY (id) REFERENCES livraria.capa (id)
+);

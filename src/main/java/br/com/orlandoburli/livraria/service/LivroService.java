@@ -6,10 +6,15 @@ import org.springframework.stereotype.Service;
 
 import br.com.orlandoburli.livraria.dto.LivroDto;
 import br.com.orlandoburli.livraria.enums.Status;
+import br.com.orlandoburli.livraria.exceptions.livro.CapaNaoEncontradaException;
+import br.com.orlandoburli.livraria.exceptions.livro.CapaNaoInformadaException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
+import br.com.orlandoburli.livraria.model.Capa;
+import br.com.orlandoburli.livraria.model.CapaId;
 import br.com.orlandoburli.livraria.model.Livro;
+import br.com.orlandoburli.livraria.repository.CapaRepository;
 import br.com.orlandoburli.livraria.repository.LivroRepository;
 import br.com.orlandoburli.livraria.utils.MessagesService;
 import br.com.orlandoburli.livraria.utils.ValidatorUtils;
@@ -23,6 +28,9 @@ public class LivroService {
 
 	@Autowired
 	private LivroRepository repository;
+
+	@Autowired
+	private CapaRepository capaRepository;
 
 	@Autowired
 	private ConversionService conversionService;
@@ -113,6 +121,80 @@ public class LivroService {
 		entity.setStatus(Status.INATIVO);
 
 		this.repository.save(entity);
+	}
+
+	/**
+	 * Retorna a imagem da capa de um livro
+	 * 
+	 * @param id Id do livro
+	 * @return Bytes da capa do livro, caso exista
+	 * @throws CapaNaoEncontradaException  Exceção disparada caso não exista a capa
+	 *                                     do livro.
+	 * @throws LivroNaoEncontradoException Exceção disparada caso não exista o livro
+	 *                                     com o id informado.
+	 */
+	public byte[] getCapa(Long id) throws CapaNaoEncontradaException, LivroNaoEncontradoException {
+		Livro livro = this.validaLivroExistente(id);
+
+		return capaRepository.findById(CapaId.builder().livro(livro).build())
+				.orElseThrow(
+						() -> new CapaNaoEncontradaException(messages.get("exceptions.CapaNaoEncontradaException", id)))
+				.getImagem();
+	}
+
+	/**
+	 * Salva a imagem da capa de um livro.
+	 * 
+	 * @param id     Id do livro
+	 * @param imagem Bytes da imagem da capa do livro
+	 * @throws LivroNaoEncontradoException Exceção disparada caso não exista o livro
+	 *                                     informado
+	 * @throws CapaNaoInformadaException   Exceção disparada caso a imagem informada
+	 *                                     seja inválida
+	 */
+	public void saveCapa(Long id, byte[] imagem) throws LivroNaoEncontradoException, CapaNaoInformadaException {
+
+		validaBytesImage(imagem);
+
+		Livro livro = this.validaLivroExistente(id);
+
+		Capa capa = capaRepository.findById(CapaId.builder().livro(livro).build())
+				.orElse(Capa.builder().id(CapaId.builder().livro(livro).build()).build());
+
+		capa.setImagem(imagem);
+
+		capaRepository.save(capa);
+	}
+
+	/**
+	 * Apaga a imagem da capa de um livro.
+	 * 
+	 * @param id Id do livro
+	 * @throws CapaNaoEncontradaException  Exceção disparada caso não exista a capa
+	 *                                     do livro.
+	 * @throws LivroNaoEncontradoException Exceção disparada caso não exista o livro
+	 *                                     com o id informado.
+	 */
+	public void destroyCapa(Long id) throws LivroNaoEncontradoException, CapaNaoEncontradaException {
+		Livro livro = this.validaLivroExistente(id);
+
+		Capa capa = capaRepository.findById(CapaId.builder().livro(livro).build()).orElseThrow(
+				() -> new CapaNaoEncontradaException(messages.get("exceptions.CapaNaoEncontradaException", id)));
+
+		capaRepository.delete(capa);
+	}
+
+	/**
+	 * Valida se os bytes são de uma imagem válida
+	 * @param imagem Bytes da imagem a ser validada
+	 * @throws CapaNaoInformadaException Exceção disparada caso a imagem informada
+	 *                                   seja inválida
+	 * 
+	 */
+	private void validaBytesImage(byte[] imagem) throws CapaNaoInformadaException {
+		if (imagem == null || imagem.length <= 10) {
+			throw new CapaNaoInformadaException(messages.get("exceptions.CapaNaoInformadaException"));
+		}
 	}
 
 	/**
