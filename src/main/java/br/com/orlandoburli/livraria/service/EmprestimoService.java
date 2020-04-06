@@ -12,14 +12,21 @@ import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
+import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.model.Emprestimo;
 import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
 import br.com.orlandoburli.livraria.utils.MessagesService;
 
 @Service
 public class EmprestimoService {
+
+	private static final String EMPRESTIMO_NAO_ENCONTRADO_EXCEPTION = "exceptions.EmprestimoNaoEncontradoException";
+
+	private static final String EMPRESTIMO_JA_DEVOLVIDO_EXCEPTION = "exceptions.EmprestimoJaDevolvidoException";
 
 	private static final int PRAZO_DEVOLUCAO = 30;
 
@@ -45,16 +52,24 @@ public class EmprestimoService {
 	 * @return Emprestimo localizado
 	 * @throws EmprestimoNaoEncontradoException Exceção disparada caso o empréstimo
 	 *                                          não tenha sido localizado.
+	 * @throws EmprestimoNaoInformadoException  Exceção disparada caso o id
+	 *                                          informado seja nulo
 	 */
-	public EmprestimoDto get(final Long id) throws EmprestimoNaoEncontradoException {
-		final Emprestimo entity = repository.findById(id).orElseThrow(() -> new EmprestimoNaoEncontradoException(
-				messages.get("exceptions.EmprestimoNaoEncontradoException", id)));
-	
+	public EmprestimoDto get(final Long id) throws EmprestimoNaoEncontradoException, EmprestimoNaoInformadoException {
+
+		if (id == null) {
+			throw new EmprestimoNaoInformadoException(messages.get("exceptions.EmprestimoNaoInformadoException"));
+		}
+
+		final Emprestimo entity = repository.findById(id).orElseThrow(
+				() -> new EmprestimoNaoEncontradoException(messages.get(EMPRESTIMO_NAO_ENCONTRADO_EXCEPTION, id)));
+
 		return conversionService.convert(entity, EmprestimoDto.class);
 	}
 
 	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
-			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException {
+			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
+			LivroNaoInformadoException {
 
 		final UsuarioDto usuario = usuarioService.get(usuarioId);
 
@@ -84,8 +99,11 @@ public class EmprestimoService {
 	 *                                          não seja localizado
 	 * @throws EmprestimoJaDevolvidoException   Exceção disparada caso o empréstimo
 	 *                                          já tenha sido devolvido
+	 * @throws EmprestimoNaoInformadoException  Exceção disparada caso o id
+	 *                                          informado seja nulo
 	 */
-	public void devolverLivro(final Long id) throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException {
+	public void devolverLivro(final Long id)
+			throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException {
 		final EmprestimoDto emprestimo = get(id);
 
 		validaLivroPodeSerDevolvido(emprestimo);
@@ -150,7 +168,7 @@ public class EmprestimoService {
 	private void validaLivroPodeSerDevolvido(final EmprestimoDto emprestimo) throws EmprestimoJaDevolvidoException {
 		if (emprestimo.getStatus() == StatusEmprestimo.DEVOLVIDO) {
 			throw new EmprestimoJaDevolvidoException(
-					messages.get("exceptions.EmprestimoJaDevolvidoException", emprestimo.getId()));
+					messages.get(EMPRESTIMO_JA_DEVOLVIDO_EXCEPTION, emprestimo.getId()));
 		}
 	}
 
