@@ -35,10 +35,7 @@ Bibliotecas de teste:
 ### Definição de pacotes
 
 ### Modelo de dados
-
-<figure class="video_container">
-  <iframe width="560" height="315" src='https://dbdiagram.io/embed/5e285bfd9e76504e0ef08a7c'></iframe>
-</figure>
+[![modelo](docs/Livraria.png)](https://dbdiagram.io/d/5e285bfd9e76504e0ef08a7c)
 
 ## CI/CD
 
