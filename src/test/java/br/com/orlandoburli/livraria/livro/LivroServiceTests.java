@@ -58,13 +58,13 @@ public class LivroServiceTests {
 	@Autowired
 	private ImageUtils imageUtils;
 
-	private Faker faker = new Faker(new Locale("pt", "BR"));
+	private final Faker faker = new Faker(new Locale("pt", "BR"));
 
 	@Test
 	public void deveCriarUmLivro() throws LivroNaoInformadoException, ValidationLivrariaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		assertThat(created, is(notNullValue()));
 		assertThat(created.getId(), is(greaterThan(0L)));
@@ -82,11 +82,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComTituloNulo() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setTitulo(null);
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("titulo"));
@@ -96,11 +96,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComTituloVazio() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setTitulo("   ");
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("titulo"));
@@ -110,11 +110,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComTituloComMenosDe3Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setTitulo(faker.lorem().characters(1, 2));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("titulo"));
@@ -124,11 +124,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComTituloComMaisDe100Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setTitulo(faker.lorem().characters(101, 200));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("titulo"));
@@ -138,11 +138,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComGeneroNulo() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setGenero(null);
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("genero"));
@@ -152,11 +152,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComGeneroVazio() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setGenero("    ");
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("genero"));
@@ -166,11 +166,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComGeneroComMenosDe3Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setGenero(faker.lorem().characters(1, 2));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("genero"));
@@ -180,11 +180,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComGeneroComMaisDe100Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setGenero(faker.lorem().characters(101, 200));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("genero"));
@@ -194,11 +194,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComAutorNulo() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setAutor(null);
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("autor"));
@@ -208,11 +208,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComAutorVazio() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setAutor("    ");
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("autor"));
@@ -222,11 +222,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComAutorComMenosDe3Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setAutor(faker.lorem().characters(1, 2));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("autor"));
@@ -236,11 +236,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComAutorComMaisDe100Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setAutor(faker.lorem().characters(101, 200));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("autor"));
@@ -250,11 +250,11 @@ public class LivroServiceTests {
 
 	@Test
 	public void naoDeveCriarUmLivroComSinopseComMaisDe1000Caracteres() {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
 		livro.setSinopse(faker.lorem().characters(1001, 2000));
 
-		ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
+		final ValidationLivrariaException exception = assertThrows(ValidationLivrariaException.class,
 				() -> service.create(livro));
 
 		assertTrue(exception.getErrors().containsKey("sinopse"));
@@ -265,13 +265,13 @@ public class LivroServiceTests {
 	@Test
 	public void deveAtualizarLivro()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		created.setTitulo("Novo titulo");
 
-		LivroDto updated = service.update(created);
+		final LivroDto updated = service.update(created);
 
 		assertThat(updated, is(notNullValue()));
 		assertThat(updated.getId(), is(equalTo(created.getId())));
@@ -288,9 +288,9 @@ public class LivroServiceTests {
 	@Test
 	public void naoDeveAtualizarLivroExcluido()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		service.destroy(created.getId());
 
@@ -300,13 +300,13 @@ public class LivroServiceTests {
 	@Test
 	public void deveExcluirLivro()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		service.destroy(created.getId());
 
-		Livro excluido = this.repository.findById(created.getId())
+		final Livro excluido = repository.findById(created.getId())
 				.orElseThrow(() -> new LivroNaoEncontradoException("Livro não encontrado nos testes"));
 
 		assertThat(excluido, is(notNullValue()));
@@ -323,11 +323,11 @@ public class LivroServiceTests {
 	@Test
 	public void deveEncontrarLivro()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
-		LivroDto founded = service.get(created.getId());
+		final LivroDto founded = service.get(created.getId());
 
 		assertThat(founded, is(notNullValue()));
 		assertThat(founded.getId(), is(equalTo(created.getId())));
@@ -346,9 +346,9 @@ public class LivroServiceTests {
 	@Test
 	public void naoDeveEncontrarLivroExcluido()
 			throws LivroNaoEncontradoException, LivroNaoInformadoException, ValidationLivrariaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		service.destroy(created.getId());
 
@@ -359,15 +359,15 @@ public class LivroServiceTests {
 	public void deveCriarCapaLivro()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
 			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
-		byte[] book01 = imageUtils.book01();
+		final byte[] book01 = imageUtils.book01();
 
 		service.saveCapa(created.getId(), book01);
 
-		byte[] capaEncontrada = service.getCapa(created.getId());
+		final byte[] capaEncontrada = service.getCapa(created.getId());
 
 		assertThat(Utils.sha1(book01), is(equalTo(Utils.sha1(capaEncontrada))));
 	}
@@ -376,9 +376,9 @@ public class LivroServiceTests {
 	public void naoDeveCriarCapaLivroComBytesNulos()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
 			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		assertThrows(CapaNaoInformadaException.class, () -> service.saveCapa(created.getId(), null));
 	}
@@ -387,9 +387,9 @@ public class LivroServiceTests {
 	public void naoDeveCriarCapaLivroComMenosDe10Bytes()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
 			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
 		assertThrows(CapaNaoInformadaException.class,
 				() -> service.saveCapa(created.getId(), faker.lorem().characters(1, 9).getBytes()));
@@ -399,11 +399,11 @@ public class LivroServiceTests {
 	public void deveExcluirCapaLivro()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
 			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
-		LivroDto livro = buildLivroRandom();
+		final LivroDto livro = buildLivroRandom();
 
-		LivroDto created = service.create(livro);
+		final LivroDto created = service.create(livro);
 
-		byte[] book01 = imageUtils.book01();
+		final byte[] book01 = imageUtils.book01();
 
 		service.saveCapa(created.getId(), book01);
 
@@ -411,16 +411,16 @@ public class LivroServiceTests {
 
 		assertThrows(CapaNaoEncontradaException.class, () -> service.getCapa(created.getId()));
 	}
-	
+
 	@Test
 	public void naoDeveExcluirCapaNaoExistente()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
 			CapaNaoEncontradaException, NoSuchAlgorithmException, CapaNaoInformadaException {
-		LivroDto created = service.create(buildLivroRandom());
+		final LivroDto created = service.create(buildLivroRandom());
 
 		assertThrows(CapaNaoEncontradaException.class, () -> service.destroyCapa(created.getId()));
 	}
-	
+
 	@Test
 	public void naoDeveExcluirCapaCujoLivroNaoExiste()
 			throws LivroNaoInformadoException, ValidationLivrariaException, LivroNaoEncontradoException, IOException,
@@ -430,8 +430,9 @@ public class LivroServiceTests {
 
 	private LivroDto buildLivroRandom() {
 		// @formatter:off
-		LivroDto livro = LivroDto
+		final LivroDto livro = LivroDto
 			.builder()
+				.id(faker.random().nextLong())
 				.titulo(faker.book().title())
 				.genero(faker.book().genre())
 				.autor(faker.book().author())
@@ -442,6 +443,6 @@ public class LivroServiceTests {
 
 	@BeforeEach
 	public void prepare() {
-		this.dbPrepareUtils.clean();
+		dbPrepareUtils.clean();
 	}
 }
