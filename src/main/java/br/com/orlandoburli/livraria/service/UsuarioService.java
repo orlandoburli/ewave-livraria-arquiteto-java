@@ -70,13 +70,13 @@ public class UsuarioService {
 
 		validaCorpoUsuario(usuario);
 
-		validaCpfExistente(usuario);
-
 		usuario.setStatus(Status.ATIVO);
 
 		final Usuario entity = conversionService.convert(usuario, Usuario.class);
 
 		validatorUtils.validate(entity);
+
+		validaCpfExistente(entity.getCpf(), 0L);
 
 		final Usuario created = repository.save(entity);
 
@@ -104,11 +104,11 @@ public class UsuarioService {
 
 		validaUsuarioExistente(usuario.getId());
 
-		validaCpfExistente(usuario);
-
 		final Usuario entity = conversionService.convert(usuario, Usuario.class);
 
 		validatorUtils.validate(entity);
+
+		validaCpfExistente(entity.getCpf(), entity.getId());
 
 		final Usuario saved = repository.save(entity);
 
@@ -142,14 +142,14 @@ public class UsuarioService {
 	/**
 	 * Valida se o cpf já existe em outro usuario
 	 *
-	 * @param usuario Usuário a ser validado
+	 * @param cpf Cpf a ser validaddo
+	 * @param id  Id do usuário, caso seja alguem já existente
 	 * @throws CpfJaExistenteException Exceção disparada caso exista o cpf em outro
 	 *                                 usuário
 	 */
-	private void validaCpfExistente(final UsuarioDto usuario) throws CpfJaExistenteException {
-		if (repository.findByCpfAndIdNot(usuario.getCpf(), usuario.getId() == null ? 0L : usuario.getId())
-				.isPresent()) {
-			throw new CpfJaExistenteException(messages.get("exceptions.CpfJaExistenteException", usuario.getCpf()));
+	private void validaCpfExistente(final String cpf, final Long id) throws CpfJaExistenteException {
+		if (repository.findByCpfAndIdNot(cpf, id).isPresent()) {
+			throw new CpfJaExistenteException(messages.get("exceptions.CpfJaExistenteException", cpf));
 		}
 	}
 
