@@ -623,9 +623,16 @@ public class UsuarioServiceTest {
 
 	private InstituicaoEnsinoDto createInstituicaoEnsino()
 			throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException {
-		final InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().nome("Faculdade das Américas")
-				.cnpj("23.519.978/0001-60").telefone("(65) 2333-2344").endereco("Av das Torres, 2344").build();
+		// @formatter:off
+		final InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
+				.build();
 
+		// @formatter:on
 		return instituicaoEnsinoService.create(instituicaoEnsinoDto);
 	}
 

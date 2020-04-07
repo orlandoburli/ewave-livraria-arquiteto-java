@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
+
 import br.com.orlandoburli.livraria.exceptions.LivrariaException;
 
 @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -20,6 +21,6 @@ public class ValidationLivrariaException extends LivrariaException {
 	}
 
 	public Map<String, Set<String>> getErrors() {
-		return this.errors;
+		return errors;
 	}
 }

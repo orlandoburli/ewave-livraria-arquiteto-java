@@ -76,13 +76,13 @@ public class InstituicaoEnsinoService {
 
 		validaCorpoInstituicaoEnsino(instituicaoEnsino);
 
-		validaCnpjExistente(instituicaoEnsino);
-
 		instituicaoEnsino.setStatus(Status.ATIVO);
 
 		final InstituicaoEnsino entity = conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
+
+		validaCnpjExistente(entity.getCnpj(), 0L);
 
 		final InstituicaoEnsino saved = repository.save(entity);
 
@@ -115,11 +115,11 @@ public class InstituicaoEnsinoService {
 
 		validaInstituicaoExistente(instituicaoEnsino.getId());
 
-		validaCnpjExistente(instituicaoEnsino);
-
 		final InstituicaoEnsino entity = conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
+
+		validaCnpjExistente(entity.getCnpj(), entity.getId());
 
 		final InstituicaoEnsino saved = repository.save(entity);
 
@@ -157,18 +157,24 @@ public class InstituicaoEnsinoService {
 	/**
 	 * Valida se o Cnpj já existe em outra instituição
 	 *
-	 * @param instituicaoEnsino instituição a ser validada
+	 * @param cnpj Cnpj a ser validado
+	 * @param Id   do cadastro para verificar por id's diferentes
 	 * @throws CnpjJaExistenteException Exceção disparada caso o CNPJ já exista em
 	 *                                  outra instituição
 	 */
-	private void validaCnpjExistente(final InstituicaoEnsinoDto instituicaoEnsino) throws CnpjJaExistenteException {
-		if (repository.findByCnpjAndIdNot(instituicaoEnsino.getCnpj(),
-				instituicaoEnsino.getId() == null ? 0L : instituicaoEnsino.getId()).isPresent()) {
-			throw new CnpjJaExistenteException(
-					messages.get("exceptions.CnpjJaExistenteException", instituicaoEnsino.getCnpj()));
+	private void validaCnpjExistente(final String cnpj, final Long id) throws CnpjJaExistenteException {
+		if (repository.findByCnpjAndIdNot(cnpj, id).isPresent()) {
+			throw new CnpjJaExistenteException(messages.get("exceptions.CnpjJaExistenteException", cnpj));
 		}
 	}
 
+	/**
+	 * Valida se o dto foi informado.
+	 *
+	 * @param instituicaoEnsino Instituição a ser validada
+	 * @throws InstituicaoEnsinoNaoInformadaException Exceção disparada quando a
+	 *                                                instituição informada é nula
+	 */
 	private void validaCorpoInstituicaoEnsino(final InstituicaoEnsinoDto instituicaoEnsino)
 			throws InstituicaoEnsinoNaoInformadaException {
 		if (instituicaoEnsino == null) {

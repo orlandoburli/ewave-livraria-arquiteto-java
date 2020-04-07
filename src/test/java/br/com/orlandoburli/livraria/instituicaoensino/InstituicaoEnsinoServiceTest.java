@@ -267,6 +267,35 @@ public class InstituicaoEnsinoServiceTest {
 	}
 
 	@Test
+	public void naoDeveCriarEntidadeComCnpjRepetido()
+			throws InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException, ValidationLivrariaException {
+		final String cnpj = geradorCpfCnpj.cnpj();
+
+		// @formatter:off
+		final InstituicaoEnsinoDto instituicao1 = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(cnpj)
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
+				.build();
+
+		final InstituicaoEnsinoDto instituicao2 = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(cnpj)
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
+				.build();
+
+		// @formatter:on
+
+		service.create(instituicao1);
+
+		assertThrows(CnpjJaExistenteException.class, () -> service.create(instituicao2));
+	}
+
+	@Test
 	public void deveAtualizarInstituicao() throws ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException,
 			InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException {
 		final InstituicaoEnsinoDto instituicaoEnsinoDto = InstituicaoEnsinoDto.builder().nome(faker.company().name())
@@ -290,6 +319,37 @@ public class InstituicaoEnsinoServiceTest {
 				.telefone(faker.phoneNumber().cellPhone()).endereco(faker.address().fullAddress()).build();
 
 		assertThrows(InstituicaoEnsinoNaoEncontradaException.class, () -> service.update(instituicaoEnsinoDto));
+	}
+
+	@Test
+	public void naoDeveAtualizarEntidadeComCnpjRepetido()
+			throws InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException, ValidationLivrariaException {
+
+		// @formatter:off
+		final InstituicaoEnsinoDto instituicao1 = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
+				.build();
+
+		final InstituicaoEnsinoDto instituicao2 = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().phoneNumber())
+					.endereco(faker.address().fullAddress())
+				.build();
+
+		// @formatter:on
+
+		final InstituicaoEnsinoDto created1 = service.create(instituicao1);
+		final InstituicaoEnsinoDto created2 = service.create(instituicao2);
+
+		created2.setCnpj(created1.getCnpj());
+
+		assertThrows(CnpjJaExistenteException.class, () -> service.update(created2));
 	}
 
 	@Test
