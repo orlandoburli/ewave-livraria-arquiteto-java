@@ -1,5 +1,8 @@
 package br.com.orlandoburli.livraria.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -13,19 +16,24 @@ import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontrad
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.UsuarioBloqueadoPorAtrasoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.Emprestimo;
+import br.com.orlandoburli.livraria.model.Restricao;
 import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
+import br.com.orlandoburli.livraria.repository.RestricaoRepository;
 import br.com.orlandoburli.livraria.utils.ClockUtils;
 import br.com.orlandoburli.livraria.utils.MessagesService;
 import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 
 @Service
 public class EmprestimoService {
+
+	private static final int DIAS_RESTRICAO = 30;
 
 	private static final int MAXIMO_LIVROS_POR_USUARIO = 2;
 
@@ -41,6 +49,9 @@ public class EmprestimoService {
 
 	@Autowired
 	private EmprestimoRepository repository;
+
+	@Autowired
+	private RestricaoRepository restricaoRepository;
 
 	@Autowired
 	private UsuarioService usuarioService;
@@ -59,6 +70,9 @@ public class EmprestimoService {
 
 	@Autowired
 	private ClockUtils clock;
+
+	@Autowired
+	private NotificacaoService notificacaoService;
 
 	/**
 	 * Retorna um emprestimo pelo seu id
@@ -85,7 +99,7 @@ public class EmprestimoService {
 	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
 			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
 			LivroNaoInformadoException, ValidationLivrariaException, LivroJaEmprestadoException,
-			MaximoPedidosUsuarioException {
+			MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final UsuarioDto usuario = usuarioService.get(usuarioId);
 
@@ -111,7 +125,7 @@ public class EmprestimoService {
 
 		final EmprestimoDto emprestimoDto = conversionService.convert(repository.save(entity), EmprestimoDto.class);
 
-		calculaDataDevolucao(emprestimoDto);
+		emprestimoDto.setDataPrevistaDevolucao(calculaDataDevolucao(emprestimo.getDataEmprestimo()));
 
 		return emprestimoDto;
 	}
@@ -144,30 +158,9 @@ public class EmprestimoService {
 
 		repository.save(entity);
 
-		if (!isEmprestimoDevolvidoNoPrazo(emprestimo)) {
-			registraInadimplenciaUsuario(emprestimo.getUsuario());
+		if (!isEmprestimoNoPrazo(emprestimo.getDataEmprestimo())) {
+			registraInadimplenciaUsuario(emprestimo);
 		}
-	}
-
-	/**
-	 * Cria um registro de inadimplência para o usuário, bloqueando-o por 30 dias.
-	 *
-	 * @param usuario usuário a ser bloqueado.
-	 */
-	private void registraInadimplenciaUsuario(final UsuarioDto usuario) {
-		// TODO Implementar inadimplencia
-	}
-
-	/**
-	 * Identifica se o empréstimo foi devolvido no prazo
-	 *
-	 * @param emprestimo Empréstimo a ser verificado
-	 * @return <b>true</b> se foi devolvido no prazo, caso contrário <b>false</b>
-	 */
-	private boolean isEmprestimoDevolvidoNoPrazo(final EmprestimoDto emprestimo) {
-		calculaDataDevolucao(emprestimo);
-
-		return emprestimo.getDataPrevistaDevolucao().isAfter(emprestimo.getDataDevolucao());
 	}
 
 	/**
@@ -177,7 +170,7 @@ public class EmprestimoService {
 	 * @throws LivroJaEmprestadoException Exceção disparada caso o livro já esteja
 	 *                                    emprestado para alguém
 	 */
-	private void validaImpedimentosLivro(final LivroDto livro) throws LivroJaEmprestadoException {
+	public void validaImpedimentosLivro(final LivroDto livro) throws LivroJaEmprestadoException {
 		if (repository.findByLivroIdAndStatus(livro.getId(), StatusEmprestimo.ABERTO).isPresent()) {
 			throw new LivroJaEmprestadoException(messages.get(LIVRO_JA_EMPRESTADO_EXCEPTION, livro.getId()));
 		}
@@ -187,16 +180,60 @@ public class EmprestimoService {
 	 * Verifica se existe algum impedimento para o usuário emprestar livros
 	 *
 	 * @param usuario Usuário a ser verificado
-	 * @throws MaximoPedidosUsuarioException Exceção disparada caso o usuário já
-	 *                                       tenha emprestado o máximo de livros
-	 *                                       permitidos
+	 * @throws MaximoPedidosUsuarioException      Exceção disparada caso o usuário
+	 *                                            já tenha emprestado o máximo de
+	 *                                            livros permitidos
+	 * @throws UsuarioBloqueadoPorAtrasoException Exceção disparada caso o usuário
+	 *                                            esteja com restrição de empréstimo
+	 *                                            por atraso
 	 */
-	private void validaImpedimentosUsuario(final UsuarioDto usuario) throws MaximoPedidosUsuarioException {
-		final Long livrosEmprestados = repository.countByUsuarioIdAndStatus(usuario.getId(), StatusEmprestimo.ABERTO);
+	public void validaImpedimentosUsuario(final UsuarioDto usuario)
+			throws MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+		final List<Emprestimo> livrosEmprestados = repository.findByUsuarioIdAndStatus(usuario.getId(),
+				StatusEmprestimo.ABERTO);
 
-		if (livrosEmprestados >= MAXIMO_LIVROS_POR_USUARIO) {
+		if (livrosEmprestados.size() >= MAXIMO_LIVROS_POR_USUARIO) {
 			throw new MaximoPedidosUsuarioException(messages.get(MAXIMO_PEDIDOS_USUARIO_EXCEPTION, usuario.getId()));
 		}
+
+		final long livrosEmprestadosAtrasados = livrosEmprestados.stream()
+				.filter(l -> !isEmprestimoNoPrazo(l.getDataEmprestimo())).count();
+
+		final Long totalRestricoesHoje = restricaoRepository
+				.countByEmprestimoUsuarioIdAndRestritoAteGreaterThanEqual(usuario.getId(), clock.hoje());
+
+		if (totalRestricoesHoje > 0 || livrosEmprestadosAtrasados > 0) {
+			throw new UsuarioBloqueadoPorAtrasoException(
+					messages.get("exceptions.UsuarioBloqueadoPorAtrasoException", usuario.getId()));
+		}
+	}
+
+	/**
+	 * Cria um registro de inadimplência para o usuário, bloqueando-o por 30 dias.
+	 *
+	 * @param usuario usuário a ser bloqueado.
+	 */
+	private void registraInadimplenciaUsuario(final EmprestimoDto emprestimo) {
+		// @formatter:off
+			final Restricao restricao = Restricao
+				.builder()
+					.emprestimo(repository.findById(emprestimo.getId()).orElse(null))
+					.restritoAte(calculaDataRestricao(clock.hoje()))
+				.build();
+		// @formatter:on
+		restricaoRepository.save(restricao);
+
+		notificacaoService.notificarEntregaComAtraso(emprestimo);
+	}
+
+	/**
+	 * Identifica se o empréstimo está no prazo
+	 *
+	 * @param emprestimo Empréstimo a ser verificado
+	 * @return <b>true</b> se foi devolvido no prazo, caso contrário <b>false</b>
+	 */
+	private boolean isEmprestimoNoPrazo(final LocalDate dataEmprestimo) {
+		return clock.hoje().isBefore(calculaDataDevolucao(dataEmprestimo));
 	}
 
 	/**
@@ -213,7 +250,11 @@ public class EmprestimoService {
 		}
 	}
 
-	private void calculaDataDevolucao(final EmprestimoDto emprestimoDto) {
-		emprestimoDto.setDataPrevistaDevolucao(emprestimoDto.getDataEmprestimo().plusDays(PRAZO_DEVOLUCAO));
+	private LocalDate calculaDataRestricao(final LocalDate dataDevolucao) {
+		return dataDevolucao.plusDays(DIAS_RESTRICAO);
+	}
+
+	private LocalDate calculaDataDevolucao(final LocalDate dataEmprestimo) {
+		return dataEmprestimo.plusDays(PRAZO_DEVOLUCAO);
 	}
 }

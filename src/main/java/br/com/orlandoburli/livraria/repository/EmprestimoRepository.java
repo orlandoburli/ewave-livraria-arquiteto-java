@@ -1,5 +1,6 @@
 package br.com.orlandoburli.livraria.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,5 +14,5 @@ public interface EmprestimoRepository extends JpaRepository<Emprestimo, Long> {
 
 	Optional<Emprestimo> findByLivroIdAndStatus(Long livroId, StatusEmprestimo status);
 
-	Long countByUsuarioIdAndStatus(Long usuarioId, StatusEmprestimo status);
+	List<Emprestimo> findByUsuarioIdAndStatus(Long usuarioId, StatusEmprestimo status);
 }

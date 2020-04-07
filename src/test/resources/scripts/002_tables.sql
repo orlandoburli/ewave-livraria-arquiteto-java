@@ -2,6 +2,7 @@ CREATE SEQUENCE livraria.seq_instituicao_ensino START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_usuario START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_livro START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_emprestimo START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE livraria.seq_restricao START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE livraria.instituicao_ensino (
 	id number(8) not null,
@@ -55,3 +56,11 @@ CREATE TABLE livraria.emprestimo (
 	CONSTRAINT fk_emprestimo_livro FOREIGN KEY (livro_id) REFERENCES livraria.livro(id)
 	
 );
+
+CREATE TABLE livraria.restricao (
+	id number(8) not null,
+	emprestimo_id number(8) not null,
+	restrito_ate date,
+	CONSTRAINT pk_restricao PRIMARY KEY (id),
+	CONSTRAINT fk_restricao_emprestimo FOREIGN KEY (emprestimo_id) REFERENCES livraria.emprestimo(id)
+)

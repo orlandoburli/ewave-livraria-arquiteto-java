@@ -3,6 +3,7 @@ package br.com.orlandoburli.livraria.emprestimo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,14 +30,19 @@ import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.dto.LivroDto;
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.UsuarioBloqueadoPorAtrasoException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
+import br.com.orlandoburli.livraria.exceptions.livro.LivroException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
@@ -79,9 +85,10 @@ public class EmprestimoServiceTests {
 	private final GeraCpfCnpj geradorCpfCnpj = new GeraCpfCnpj();
 
 	@Test
-	public void deveEmprestarLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+	public void deveEmprestarLivro()
+			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
+			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
@@ -140,10 +147,51 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveEncontrarEmprestimo() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
-			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+	public void naoDeveEmprestarLivroAposMaisDe30DiasDoEmprestimoNaoDevolvido()
+			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
+			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario = usuario();
+
+		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+
+		final LocalDate dataDevolucao = LocalDate.now().plusDays(faker.random().nextInt(31, 50));
+
+		prepareClockMockFor(dataDevolucao);
+
+		final EmprestimoDto founded = service.get(emprestimo.getId());
+
+		assertThat(founded, is(notNullValue()));
+		assertThat(founded.getDataDevolucao(), is(nullValue()));
+		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.ABERTO)));
+
+		assertThrows(UsuarioBloqueadoPorAtrasoException.class, () -> service.validaImpedimentosUsuario(usuario));
+	}
+
+	@Test
+	public void naoDeveEmprestarLivroJaEmprestado() throws ValidationLivrariaException, LivroException,
+			UsuarioException, InstituicaoEnsinoException, EmprestimoException {
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario1 = usuario();
+		final UsuarioDto usuario2 = usuario();
+
+		service.realizarEmprestimo(usuario1.getId(), livro.getId());
+
+		assertThrows(LivroJaEmprestadoException.class,
+				() -> service.realizarEmprestimo(usuario2.getId(), livro.getId()));
+	}
+
+	@Test
+	public void deveEncontrarEmprestimo()
+			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
+			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
@@ -157,9 +205,10 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveEmprestarDoisLivros() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+	public void deveEmprestarDoisLivros()
+			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
+			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
@@ -177,7 +226,7 @@ public class EmprestimoServiceTests {
 	public void naoDeveEmprestarMaisDe2Livros()
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
@@ -199,7 +248,7 @@ public class EmprestimoServiceTests {
 	public void naoDeveEmprestarOMesmoLivroJaEmprestado()
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
@@ -224,10 +273,11 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveDevolverLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
-			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+	public void deveDevolverLivro()
+			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
+			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
@@ -249,7 +299,7 @@ public class EmprestimoServiceTests {
 			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
 			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
@@ -268,6 +318,36 @@ public class EmprestimoServiceTests {
 		assertThat(founded, is(notNullValue()));
 		assertThat(founded.getDataDevolucao(), is(equalTo(dataDevolucao)));
 		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.DEVOLVIDO)));
+
+		service.validaImpedimentosUsuario(usuario);
+	}
+
+	@Test
+	public void deveDevolverLivroAposMaisDe30DiasDoEmprestimoEGerarRestricao()
+			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
+			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario = usuario();
+
+		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+
+		final LocalDate dataDevolucao = LocalDate.now().plusDays(faker.random().nextInt(31, 50));
+
+		prepareClockMockFor(dataDevolucao);
+
+		service.devolverLivro(emprestimo.getId());
+
+		final EmprestimoDto founded = service.get(emprestimo.getId());
+
+		assertThat(founded, is(notNullValue()));
+		assertThat(founded.getDataDevolucao(), is(equalTo(dataDevolucao)));
+		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.DEVOLVIDO)));
+
+		assertThrows(UsuarioBloqueadoPorAtrasoException.class, () -> service.validaImpedimentosUsuario(usuario));
 	}
 
 	@Test
@@ -285,7 +365,7 @@ public class EmprestimoServiceTests {
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
 
 		final LivroDto livro = livro();
 
