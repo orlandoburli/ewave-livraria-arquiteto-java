@@ -540,6 +540,39 @@ public class UsuarioServiceTest {
 	}
 
 	@Test
+	public void naoDeveAtualizarUmUsuarioComCpfRepetido() throws InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException,
+			CnpjJaExistenteException, UsuarioNaoInformadoException, CpfJaExistenteException {
+
+		// @formatter:off
+		final UsuarioDto usuario1 = UsuarioDto
+				.builder()
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+
+		final UsuarioDto usuario2 = UsuarioDto
+				.builder()
+					.nome(faker.name().fullName())
+					.endereco(faker.address().fullAddress())
+					.cpf(geradorCpfCnpj.cpf())
+					.email(faker.internet().emailAddress())
+					.instituicao(createInstituicaoEnsino())
+				.build();
+		// @formatter:on
+
+		final UsuarioDto created1 = service.create(usuario1);
+		final UsuarioDto created2 = service.create(usuario2);
+
+		created2.setCpf(created1.getCpf());
+
+		assertThrows(CpfJaExistenteException.class, () -> service.update(created2));
+	}
+
+	@Test
 	public void deveInativarUsuario() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			UsuarioNaoInformadoException, UsuarioNaoEncontradoException, CpfJaExistenteException,
 			UsuarioPossuiEmprestimosAbertosException, CnpjJaExistenteException {
