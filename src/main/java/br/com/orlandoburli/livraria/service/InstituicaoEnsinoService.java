@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.enums.Status;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.CnpjJaExistenteException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoComUsuariosException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoEncontradaException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
@@ -42,24 +43,24 @@ public class InstituicaoEnsinoService {
 
 	/**
 	 * Retorna uma instituição de ensino pelo Id.
-	 * 
+	 *
 	 * @param id Id da instituição de ensino.
 	 * @return Dados da Instituição de ensino encontrada.
 	 * @throws InstituicaoEnsinoNaoEncontradaException Exceção disparada caso a
 	 *                                                 instituição de ensino não
 	 *                                                 seja encontrada.
 	 */
-	public InstituicaoEnsinoDto get(Long id) throws InstituicaoEnsinoNaoEncontradaException {
-		InstituicaoEnsino entity = this.repository.findByIdAndStatus(id, Status.ATIVO)
+	public InstituicaoEnsinoDto get(final Long id) throws InstituicaoEnsinoNaoEncontradaException {
+		final InstituicaoEnsino entity = repository.findByIdAndStatus(id, Status.ATIVO)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
 						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 
-		return this.conversionService.convert(entity, InstituicaoEnsinoDto.class);
+		return conversionService.convert(entity, InstituicaoEnsinoDto.class);
 	}
 
 	/**
 	 * Cria uma instituição de ensino.
-	 * 
+	 *
 	 * @param instituicaoEnsino Instituição de ensino a ser criada.
 	 * @return Instituição de ensino criada, com id populado.
 	 * @throws ValidationLivrariaException            Exceção disparada se ocorrerem
@@ -67,28 +68,30 @@ public class InstituicaoEnsinoService {
 	 * @throws InstituicaoEnsinoNaoInformadaException Exceção disparada quando a
 	 *                                                instituição de ensino for
 	 *                                                totalmente nula.
+	 * @throws CnpjJaExistenteException               Exceção disparada caso o CNPJ
+	 *                                                já exista em outra instituição
 	 */
-	public InstituicaoEnsinoDto create(InstituicaoEnsinoDto instituicaoEnsino)
-			throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+	public InstituicaoEnsinoDto create(final InstituicaoEnsinoDto instituicaoEnsino)
+			throws ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException {
 
 		validaCorpoInstituicaoEnsino(instituicaoEnsino);
 
+		validaCnpjExistente(instituicaoEnsino);
+
 		instituicaoEnsino.setStatus(Status.ATIVO);
 
-		InstituicaoEnsino entity = this.conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
+		final InstituicaoEnsino entity = conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
-		
-		// TODO Validar repeticao de cnpj e email
 
-		InstituicaoEnsino saved = repository.save(entity);
+		final InstituicaoEnsino saved = repository.save(entity);
 
-		return this.conversionService.convert(saved, InstituicaoEnsinoDto.class);
+		return conversionService.convert(saved, InstituicaoEnsinoDto.class);
 	}
 
 	/**
 	 * Atualiza uma instituição de ensino
-	 * 
+	 *
 	 * @param instituicaoEnsino Instituição de ensino a ser atualizada.
 	 * @return Dados da instituição de ensino atualizada.
 	 * @throws InstituicaoEnsinoNaoEncontradaException Exceção disparada caso a
@@ -100,29 +103,32 @@ public class InstituicaoEnsinoService {
 	 * @throws InstituicaoEnsinoNaoInformadaException  Exceção disparada quando a
 	 *                                                 instituição de ensino for
 	 *                                                 totalmente nula.
+	 * @throws CnpjJaExistenteException                Exceção disparada caso o CNPJ
+	 *                                                 já exista em outra
+	 *                                                 instituição
 	 */
-	public InstituicaoEnsinoDto update(InstituicaoEnsinoDto instituicaoEnsino)
+	public InstituicaoEnsinoDto update(final InstituicaoEnsinoDto instituicaoEnsino)
 			throws InstituicaoEnsinoNaoEncontradaException, ValidationLivrariaException,
-			InstituicaoEnsinoNaoInformadaException {
+			InstituicaoEnsinoNaoInformadaException, CnpjJaExistenteException {
 
 		validaCorpoInstituicaoEnsino(instituicaoEnsino);
 
 		validaInstituicaoExistente(instituicaoEnsino.getId());
 
-		InstituicaoEnsino entity = this.conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
+		validaCnpjExistente(instituicaoEnsino);
+
+		final InstituicaoEnsino entity = conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
 		validatorUtils.validate(entity);
-		
-		// TODO Validar repeticao de cnpj e email
 
-		InstituicaoEnsino saved = repository.save(entity);
+		final InstituicaoEnsino saved = repository.save(entity);
 
-		return this.conversionService.convert(saved, InstituicaoEnsinoDto.class);
+		return conversionService.convert(saved, InstituicaoEnsinoDto.class);
 	}
 
 	/**
 	 * Inativa uma instituição de ensino.
-	 * 
+	 *
 	 * @param id Id da instituição
 	 * @throws InstituicaoEnsinoNaoEncontradaException Exceção disparada caso a
 	 *                                                 instituição não seja
@@ -133,32 +139,47 @@ public class InstituicaoEnsinoService {
 	 *                                                 registrados, não podendo ser
 	 *                                                 excluída.
 	 */
-	public void destroy(Long id) throws InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
+	public void destroy(final Long id)
+			throws InstituicaoEnsinoNaoEncontradaException, InstituicaoEnsinoComUsuariosException {
 
 		validaUsuariosExistentes(id);
 
-		InstituicaoEnsino entity = this.repository.findById(id)
+		final InstituicaoEnsino entity = repository.findById(id)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
 						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 
 		entity.setStatus(Status.INATIVO);
 
-		this.repository.save(entity);
+		repository.save(entity);
 
 	}
 
-	private void validaCorpoInstituicaoEnsino(InstituicaoEnsinoDto instituicaoEnsino)
+	/**
+	 * Valida se o Cnpj já existe em outra instituição
+	 *
+	 * @param instituicaoEnsino instituição a ser validada
+	 * @throws CnpjJaExistenteException Exceção disparada caso o CNPJ já exista em
+	 *                                  outra instituição
+	 */
+	private void validaCnpjExistente(final InstituicaoEnsinoDto instituicaoEnsino) throws CnpjJaExistenteException {
+		if (repository.findByCnpjAndIdNot(instituicaoEnsino.getCnpj(),
+				instituicaoEnsino.getId() == null ? 0L : instituicaoEnsino.getId()).isPresent()) {
+			throw new CnpjJaExistenteException(
+					messages.get("exceptions.CnpjJaExistenteException", instituicaoEnsino.getCnpj()));
+		}
+	}
+
+	private void validaCorpoInstituicaoEnsino(final InstituicaoEnsinoDto instituicaoEnsino)
 			throws InstituicaoEnsinoNaoInformadaException {
 		if (instituicaoEnsino == null) {
-			throw new InstituicaoEnsinoNaoInformadaException(
-					messages.get(INSTITUICAO_ENSINO_NAO_INFORMADA_EXCEPTION));
+			throw new InstituicaoEnsinoNaoInformadaException(messages.get(INSTITUICAO_ENSINO_NAO_INFORMADA_EXCEPTION));
 		}
 	}
 
 	/**
 	 * Valida se a instituição de ensino existe com o id informado e com o status
 	 * ATIVA.
-	 * 
+	 *
 	 * @param id Id da Instituição de ensino
 	 * @return Entidade da instituição de ensino
 	 * @throws InstituicaoEnsinoNaoEncontradaException Exceção disparada caso a
@@ -166,22 +187,22 @@ public class InstituicaoEnsinoService {
 	 *                                                 encontrada com o id
 	 *                                                 informado.
 	 */
-	private InstituicaoEnsino validaInstituicaoExistente(Long id) throws InstituicaoEnsinoNaoEncontradaException {
-		return this.repository.findByIdAndStatus(id, Status.ATIVO)
+	private InstituicaoEnsino validaInstituicaoExistente(final Long id) throws InstituicaoEnsinoNaoEncontradaException {
+		return repository.findByIdAndStatus(id, Status.ATIVO)
 				.orElseThrow(() -> new InstituicaoEnsinoNaoEncontradaException(
 						messages.get(INSTITUICAO_ENSINO_NAO_ENCONTRADA_EXCEPTION, id)));
 	}
 
 	/**
 	 * Valida se a instituição possui usuários existentes para ser excluída
-	 * 
+	 *
 	 * @param id Id da Instituição de ensino
 	 * @throws InstituicaoEnsinoComUsuariosException Exceção disparada caso a
 	 *                                               instituição possua usuários
 	 *                                               registrados.
 	 */
-	private void validaUsuariosExistentes(Long id) throws InstituicaoEnsinoComUsuariosException {
-		Long count = this.usuarioRepository.countByInstituicaoId(id);
+	private void validaUsuariosExistentes(final Long id) throws InstituicaoEnsinoComUsuariosException {
+		final Long count = usuarioRepository.countByInstituicaoId(id);
 
 		if (count > 0) {
 			throw new InstituicaoEnsinoComUsuariosException(

@@ -11,5 +11,7 @@ import br.com.orlandoburli.livraria.model.InstituicaoEnsino;
 @Repository
 public interface InstituicaoEnsinoRepository extends JpaRepository<InstituicaoEnsino, Long> {
 
-	public Optional<InstituicaoEnsino> findByIdAndStatus(Long id, Status status);
+	Optional<InstituicaoEnsino> findByIdAndStatus(Long id, Status status);
+
+	Optional<InstituicaoEnsino> findByCnpjAndIdNot(String cnpj, Long id);
 }

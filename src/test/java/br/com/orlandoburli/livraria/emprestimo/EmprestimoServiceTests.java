@@ -37,11 +37,13 @@ import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformado
 import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.UsuarioBloqueadoPorAtrasoException;
+import br.com.orlandoburli.livraria.exceptions.instituicaoensino.CnpjJaExistenteException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.InstituicaoEnsinoNaoInformadaException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
+import br.com.orlandoburli.livraria.exceptions.usuario.CpfJaExistenteException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
@@ -85,10 +87,10 @@ public class EmprestimoServiceTests {
 	private final GeraCpfCnpj geradorCpfCnpj = new GeraCpfCnpj();
 
 	@Test
-	public void deveEmprestarLivro()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+	public void deveEmprestarLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
+			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
+			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -107,7 +109,8 @@ public class EmprestimoServiceTests {
 	@Test
 	public void naoDeveEmprestarLivroInexistente()
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException {
+			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final UsuarioDto usuario = usuario();
 
@@ -116,9 +119,9 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void naoDeveEmprestarLivroNulo()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException {
+	public void naoDeveEmprestarLivroNulo() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
+			LivroNaoEncontradoException, CpfJaExistenteException, CnpjJaExistenteException {
 
 		final UsuarioDto usuario = usuario();
 
@@ -151,7 +154,8 @@ public class EmprestimoServiceTests {
 			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
 			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -187,11 +191,11 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveEncontrarEmprestimo()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+	public void deveEncontrarEmprestimo() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
+			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
+			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
+			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -205,10 +209,10 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveEmprestarDoisLivros()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+	public void deveEmprestarDoisLivros() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
+			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
+			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
@@ -226,7 +230,8 @@ public class EmprestimoServiceTests {
 	public void naoDeveEmprestarMaisDe2Livros()
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
@@ -248,7 +253,8 @@ public class EmprestimoServiceTests {
 	public void naoDeveEmprestarOMesmoLivroJaEmprestado()
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -273,11 +279,11 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveDevolverLivro()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+	public void deveDevolverLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
+			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
+			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
+			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
+			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -299,7 +305,8 @@ public class EmprestimoServiceTests {
 			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
 			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -327,7 +334,8 @@ public class EmprestimoServiceTests {
 			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
 			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -365,7 +373,8 @@ public class EmprestimoServiceTests {
 			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
 			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
 			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			CpfJaExistenteException, CnpjJaExistenteException {
 
 		final LivroDto livro = livro();
 
@@ -390,7 +399,7 @@ public class EmprestimoServiceTests {
 		return livroService.create(livro);
 	}
 
-	private InstituicaoEnsinoDto instituicao() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException {
+	private InstituicaoEnsinoDto instituicao() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, CnpjJaExistenteException {
 		final InstituicaoEnsinoDto instituicaoEnsino = InstituicaoEnsinoDto
 				.builder()
 				.nome(faker.company().name())
@@ -402,7 +411,7 @@ public class EmprestimoServiceTests {
 		return insituicaoEnsinoService.create(instituicaoEnsino);
 	}
 
-	private UsuarioDto usuario() throws UsuarioNaoInformadoException, ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException {
+	private UsuarioDto usuario() throws UsuarioNaoInformadoException, ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, CpfJaExistenteException, CnpjJaExistenteException {
 		final UsuarioDto usuarioDto = UsuarioDto
 				.builder()
 				.nome(faker.name().fullName())

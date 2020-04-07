@@ -96,6 +96,31 @@ public class EmprestimoService {
 		return conversionService.convert(entity, EmprestimoDto.class);
 	}
 
+	/**
+	 * Realiza um emprestimo de um livro a um usuario
+	 *
+	 * @param usuarioId Id do usuário
+	 * @param livroId   Id do livro
+	 * @return Dados do emprestimo
+	 * @throws UsuarioNaoEncontradoException      Exceção disparada caso o usuário
+	 *                                            não seja encontrado
+	 * @throws LivroNaoEncontradoException        Exceção disparada caso o Livro não
+	 *                                            seja encontrado
+	 * @throws UsuarioNaoInformadoException       Exceção disparada caso o usuário
+	 *                                            não seja informado
+	 * @throws LivroNaoInformadoException         Exceção disparada caso o livro não
+	 *                                            seja informado
+	 * @throws ValidationLivrariaException        Exceção disparada caso haja algum
+	 *                                            erro na validação dos dados do
+	 *                                            emprestimo
+	 * @throws LivroJaEmprestadoException         Exceção disparada caso o livro já
+	 *                                            esteja emprestado
+	 * @throws MaximoPedidosUsuarioException      Exceção disparada caso o máximo de
+	 *                                            emprestimos já tenha sido feito
+	 *                                            pelo usuario
+	 * @throws UsuarioBloqueadoPorAtrasoException Exceção disparada caso o usuário
+	 *                                            esteja bloqueado por atraso
+	 */
 	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
 			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
 			LivroNaoInformadoException, ValidationLivrariaException, LivroJaEmprestadoException,

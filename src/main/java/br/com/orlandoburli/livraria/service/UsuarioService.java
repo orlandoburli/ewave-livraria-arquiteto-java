@@ -6,10 +6,14 @@ import org.springframework.stereotype.Service;
 
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.Status;
+import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
+import br.com.orlandoburli.livraria.exceptions.usuario.CpfJaExistenteException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
+import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioPossuiEmprestimosAbertosException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.Usuario;
+import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
 import br.com.orlandoburli.livraria.repository.UsuarioRepository;
 import br.com.orlandoburli.livraria.utils.MessagesService;
 import br.com.orlandoburli.livraria.utils.ValidatorUtils;
@@ -33,6 +37,9 @@ public class UsuarioService {
 	@Autowired
 	private MessagesService messages;
 
+	@Autowired
+	private EmprestimoRepository emprestimoRepository;
+
 	/**
 	 * Retorna um usuário pelo Id.
 	 *
@@ -40,7 +47,8 @@ public class UsuarioService {
 	 * @return Usuário encontrado.
 	 * @throws UsuarioNaoEncontradoException Exceção disparada caso o usuário não
 	 *                                       seja encontrado com o id informado.
-	 * @throws UsuarioNaoInformadoException  Exceção disparada caso o id do usuárioo não seja informado
+	 * @throws UsuarioNaoInformadoException  Exceção disparada caso o id do usuárioo
+	 *                                       não seja informado
 	 */
 	public UsuarioDto get(final Long id) throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException {
 		return conversionService.convert(validaUsuarioExistente(id), UsuarioDto.class);
@@ -55,18 +63,20 @@ public class UsuarioService {
 	 *                                      validação dos dados.
 	 * @throws UsuarioNaoInformadoException Exceção disparada caso o usuário seja
 	 *                                      nulo
+	 * @throws CpfJaExistenteException      Exceção disparada caso o Cpf já exista
 	 */
-	public UsuarioDto create(final UsuarioDto usuario) throws ValidationLivrariaException, UsuarioNaoInformadoException {
+	public UsuarioDto create(final UsuarioDto usuario)
+			throws ValidationLivrariaException, UsuarioNaoInformadoException, CpfJaExistenteException {
 
 		validaCorpoUsuario(usuario);
+
+		validaCpfExistente(usuario);
 
 		usuario.setStatus(Status.ATIVO);
 
 		final Usuario entity = conversionService.convert(usuario, Usuario.class);
 
 		validatorUtils.validate(entity);
-
-		// TODO Valida repetição de cpf e email
 
 		final Usuario created = repository.save(entity);
 
@@ -84,19 +94,21 @@ public class UsuarioService {
 	 *                                       exista com o id informado.
 	 * @throws UsuarioNaoInformadoException  Exceção disparada caso o usuário
 	 *                                       enviado seja nulo
+	 * @throws CpfJaExistenteException       Exceção disparada caso o Cpf já exista
+	 *                                       em outro usuário
 	 */
-	public UsuarioDto update(final UsuarioDto usuario)
-			throws ValidationLivrariaException, UsuarioNaoEncontradoException, UsuarioNaoInformadoException {
+	public UsuarioDto update(final UsuarioDto usuario) throws ValidationLivrariaException,
+			UsuarioNaoEncontradoException, UsuarioNaoInformadoException, CpfJaExistenteException {
 
 		validaCorpoUsuario(usuario);
 
 		validaUsuarioExistente(usuario.getId());
 
+		validaCpfExistente(usuario);
+
 		final Usuario entity = conversionService.convert(usuario, Usuario.class);
 
 		validatorUtils.validate(entity);
-
-		// TODO Valida repetição de cpf e email
 
 		final Usuario saved = repository.save(entity);
 
@@ -107,11 +119,17 @@ public class UsuarioService {
 	 * Exclui um usuário
 	 *
 	 * @param id Id do usuário a ser excluído.
-	 * @throws UsuarioNaoEncontradoException Exceção disparada caso o usuário não
-	 *                                       seja encontrado.
-	 * @throws UsuarioNaoInformadoException  Exceção disparada caso o id do usuário não seja informado.
+	 * @throws UsuarioNaoEncontradoException            Exceção disparada caso o
+	 *                                                  usuário não seja encontrado.
+	 * @throws UsuarioNaoInformadoException             Exceção disparada caso o id
+	 *                                                  do usuário não seja
+	 *                                                  informado.
+	 * @throws UsuarioPossuiEmprestimosAbertosException Exceção disparada caso o
+	 *                                                  usuário possua emprestimos
+	 *                                                  em abertos
 	 */
-	public void destroy(final Long id) throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException {
+	public void destroy(final Long id) throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException,
+			UsuarioPossuiEmprestimosAbertosException {
 		validaUsuarioPossuiEmprestimos(id);
 
 		final Usuario entity = validaUsuarioExistente(id);
@@ -121,8 +139,33 @@ public class UsuarioService {
 		repository.save(entity);
 	}
 
-	private void validaUsuarioPossuiEmprestimos(final Long id) {
-		// TODO Auto-generated method stub
+	/**
+	 * Valida se o cpf já existe em outro usuario
+	 *
+	 * @param usuario Usuário a ser validado
+	 * @throws CpfJaExistenteException Exceção disparada caso exista o cpf em outro
+	 *                                 usuário
+	 */
+	private void validaCpfExistente(final UsuarioDto usuario) throws CpfJaExistenteException {
+		if (repository.findByCpfAndIdNot(usuario.getCpf(), usuario.getId() == null ? 0L : usuario.getId())
+				.isPresent()) {
+			throw new CpfJaExistenteException(messages.get("exceptions.CpfJaExistenteException", usuario.getCpf()));
+		}
+	}
+
+	/**
+	 * Valida se o usuário possui empréstimos em aberto
+	 *
+	 * @param id Id do usuário
+	 * @throws UsuarioPossuiEmprestimosAbertosException Exceção disparada caso o
+	 *                                                  usuário possua empréstimos
+	 *                                                  em aberto
+	 */
+	private void validaUsuarioPossuiEmprestimos(final Long id) throws UsuarioPossuiEmprestimosAbertosException {
+		if (!emprestimoRepository.findByUsuarioIdAndStatus(id, StatusEmprestimo.ABERTO).isEmpty()) {
+			throw new UsuarioPossuiEmprestimosAbertosException(
+					messages.get("exceptions.UsuarioPossuiEmprestimosAbertosException", id));
+		}
 	}
 
 	/**
@@ -132,9 +175,11 @@ public class UsuarioService {
 	 * @return Entidade do usuario, caso encontrado
 	 * @throws UsuarioNaoEncontradoException Exceção disparada caso o usuário não
 	 *                                       seja encontrado com o id informado.
-	 * @throws UsuarioNaoInformadoException Exceção disparada caso o id do usuário não seja informado.
+	 * @throws UsuarioNaoInformadoException  Exceção disparada caso o id do usuário
+	 *                                       não seja informado.
 	 */
-	private Usuario validaUsuarioExistente(final Long id) throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException {
+	private Usuario validaUsuarioExistente(final Long id)
+			throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException {
 		if (id == null) {
 			throw new UsuarioNaoInformadoException(messages.get(USUARIO_NAO_INFORMADO_EXCEPTION));
 		}
