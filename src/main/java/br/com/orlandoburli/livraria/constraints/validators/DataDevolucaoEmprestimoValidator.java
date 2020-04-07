@@ -7,10 +7,11 @@ import br.com.orlandoburli.livraria.constraints.annotations.DataDevolucaoEmprest
 import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
 import br.com.orlandoburli.livraria.model.Emprestimo;
 
-public class DataDevolucaoEmprestimoValidator implements ConstraintValidator<DataDevolucaoEmprestimo, Emprestimo>{
+public class DataDevolucaoEmprestimoValidator implements ConstraintValidator<DataDevolucaoEmprestimo, Emprestimo> {
 
 	@Override
-	public boolean isValid(Emprestimo value, ConstraintValidatorContext context) {
-		return value.getDataDevolucao() == null && value.getStatus() == StatusEmprestimo.DEVOLVIDO;
+	public boolean isValid(final Emprestimo value, final ConstraintValidatorContext context) {
+		return value.getDataDevolucao() != null && value.getStatus() == StatusEmprestimo.DEVOLVIDO
+				|| value.getStatus() == StatusEmprestimo.ABERTO;
 	}
 }

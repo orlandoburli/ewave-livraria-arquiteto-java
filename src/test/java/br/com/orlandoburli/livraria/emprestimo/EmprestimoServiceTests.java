@@ -146,8 +146,8 @@ public class EmprestimoServiceTests {
 
 		final EmprestimoDto founded = service.get(emprestimo.getId());
 
-		assertThat(emprestimo, is(notNullValue()));
-		assertThat(emprestimo.getDataDevolucao(), is(equalTo(LocalDate.now())));
+		assertThat(founded, is(notNullValue()));
+		assertThat(founded.getDataDevolucao(), is(equalTo(LocalDate.now())));
 		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.DEVOLVIDO)));
 	}
 

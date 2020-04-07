@@ -17,9 +17,11 @@ import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
+import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.Emprestimo;
 import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
 import br.com.orlandoburli.livraria.utils.MessagesService;
+import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 
 @Service
 public class EmprestimoService {
@@ -45,6 +47,9 @@ public class EmprestimoService {
 	@Autowired
 	private MessagesService messages;
 
+	@Autowired
+	private ValidatorUtils validator;
+
 	/**
 	 * Retorna um emprestimo pelo seu id
 	 *
@@ -69,7 +74,7 @@ public class EmprestimoService {
 
 	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
 			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
-			LivroNaoInformadoException {
+			LivroNaoInformadoException, ValidationLivrariaException {
 
 		final UsuarioDto usuario = usuarioService.get(usuarioId);
 
@@ -79,12 +84,21 @@ public class EmprestimoService {
 
 		validaImpedimentosLivro(livro);
 
-		final EmprestimoDto emprestimo = EmprestimoDto.builder().livro(livro).usuario(usuario)
-				.dataEmprestimo(dataAtual()).build();
+		// @formatter:off
+		final EmprestimoDto emprestimo = EmprestimoDto
+				.builder()
+					.livro(livro)
+					.usuario(usuario)
+					.dataEmprestimo(dataAtual())
+					.status(StatusEmprestimo.ABERTO)
+				.build();
+		// @formatter:on
 
-		final Emprestimo entity = repository.save(conversionService.convert(emprestimo, Emprestimo.class));
+		final Emprestimo entity = conversionService.convert(emprestimo, Emprestimo.class);
 
-		final EmprestimoDto emprestimoDto = conversionService.convert(entity, EmprestimoDto.class);
+		validator.validate(entity);
+
+		final EmprestimoDto emprestimoDto = conversionService.convert(repository.save(entity), EmprestimoDto.class);
 
 		calculaDataDevolucao(emprestimoDto);
 
@@ -101,9 +115,11 @@ public class EmprestimoService {
 	 *                                          já tenha sido devolvido
 	 * @throws EmprestimoNaoInformadoException  Exceção disparada caso o id
 	 *                                          informado seja nulo
+	 * @throws ValidationLivrariaException      Exceção disparada caso haja algum
+	 *                                          erro nos dados do emprestimo
 	 */
-	public void devolverLivro(final Long id)
-			throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException {
+	public void devolverLivro(final Long id) throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
+			EmprestimoNaoInformadoException, ValidationLivrariaException {
 		final EmprestimoDto emprestimo = get(id);
 
 		validaLivroPodeSerDevolvido(emprestimo);
@@ -111,7 +127,11 @@ public class EmprestimoService {
 		emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
 		emprestimo.setDataDevolucao(dataAtual());
 
-		repository.save(conversionService.convert(emprestimo, Emprestimo.class));
+		final Emprestimo entity = conversionService.convert(emprestimo, Emprestimo.class);
+
+		validator.validate(entity);
+
+		repository.save(entity);
 
 		if (!isEmprestimoDevolvidoNoPrazo(emprestimo)) {
 			registraInadimplenciaUsuario(emprestimo.getUsuario());
