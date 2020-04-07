@@ -1,7 +1,5 @@
 package br.com.orlandoburli.livraria.service;
 
-import java.time.LocalDate;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
@@ -13,6 +11,8 @@ import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoException;
@@ -20,11 +20,18 @@ import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoExcept
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.Emprestimo;
 import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
+import br.com.orlandoburli.livraria.utils.ClockUtils;
 import br.com.orlandoburli.livraria.utils.MessagesService;
 import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 
 @Service
 public class EmprestimoService {
+
+	private static final int MAXIMO_LIVROS_POR_USUARIO = 2;
+
+	private static final String MAXIMO_PEDIDOS_USUARIO_EXCEPTION = "exceptions.MaximoPedidosUsuarioException";
+
+	private static final String LIVRO_JA_EMPRESTADO_EXCEPTION = "exceptions.LivroJaEmprestadoException";
 
 	private static final String EMPRESTIMO_NAO_ENCONTRADO_EXCEPTION = "exceptions.EmprestimoNaoEncontradoException";
 
@@ -50,6 +57,9 @@ public class EmprestimoService {
 	@Autowired
 	private ValidatorUtils validator;
 
+	@Autowired
+	private ClockUtils clock;
+
 	/**
 	 * Retorna um emprestimo pelo seu id
 	 *
@@ -74,7 +84,8 @@ public class EmprestimoService {
 
 	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
 			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
-			LivroNaoInformadoException, ValidationLivrariaException {
+			LivroNaoInformadoException, ValidationLivrariaException, LivroJaEmprestadoException,
+			MaximoPedidosUsuarioException {
 
 		final UsuarioDto usuario = usuarioService.get(usuarioId);
 
@@ -89,7 +100,7 @@ public class EmprestimoService {
 				.builder()
 					.livro(livro)
 					.usuario(usuario)
-					.dataEmprestimo(dataAtual())
+					.dataEmprestimo(clock.hoje())
 					.status(StatusEmprestimo.ABERTO)
 				.build();
 		// @formatter:on
@@ -125,7 +136,7 @@ public class EmprestimoService {
 		validaLivroPodeSerDevolvido(emprestimo);
 
 		emprestimo.setStatus(StatusEmprestimo.DEVOLVIDO);
-		emprestimo.setDataDevolucao(dataAtual());
+		emprestimo.setDataDevolucao(clock.hoje());
 
 		final Emprestimo entity = conversionService.convert(emprestimo, Emprestimo.class);
 
@@ -163,19 +174,29 @@ public class EmprestimoService {
 	 * Verifica se existe algum impedimento para o emprestimo deste livro
 	 *
 	 * @param livro Livro a ser verificado
+	 * @throws LivroJaEmprestadoException Exceção disparada caso o livro já esteja
+	 *                                    emprestado para alguém
 	 */
-	private void validaImpedimentosLivro(final LivroDto livro) {
-		// TODO Auto-generated method stub
-
+	private void validaImpedimentosLivro(final LivroDto livro) throws LivroJaEmprestadoException {
+		if (repository.findByLivroIdAndStatus(livro.getId(), StatusEmprestimo.ABERTO).isPresent()) {
+			throw new LivroJaEmprestadoException(messages.get(LIVRO_JA_EMPRESTADO_EXCEPTION, livro.getId()));
+		}
 	}
 
 	/**
 	 * Verifica se existe algum impedimento para o usuário emprestar livros
 	 *
 	 * @param usuario Usuário a ser verificado
+	 * @throws MaximoPedidosUsuarioException Exceção disparada caso o usuário já
+	 *                                       tenha emprestado o máximo de livros
+	 *                                       permitidos
 	 */
-	private void validaImpedimentosUsuario(final UsuarioDto usuario) {
-		// TODO Auto-generated method stub
+	private void validaImpedimentosUsuario(final UsuarioDto usuario) throws MaximoPedidosUsuarioException {
+		final Long livrosEmprestados = repository.countByUsuarioIdAndStatus(usuario.getId(), StatusEmprestimo.ABERTO);
+
+		if (livrosEmprestados >= MAXIMO_LIVROS_POR_USUARIO) {
+			throw new MaximoPedidosUsuarioException(messages.get(MAXIMO_PEDIDOS_USUARIO_EXCEPTION, usuario.getId()));
+		}
 	}
 
 	/**
@@ -190,18 +211,6 @@ public class EmprestimoService {
 			throw new EmprestimoJaDevolvidoException(
 					messages.get(EMPRESTIMO_JA_DEVOLVIDO_EXCEPTION, emprestimo.getId()));
 		}
-	}
-
-	/**
-	 * Retorna a data atual. <br/>
-	 *
-	 * <b>Atenção: O motivo de existir este método é para facilitar o mock dos
-	 * testes.</b>
-	 *
-	 * @return Data atual do sistema.
-	 */
-	private LocalDate dataAtual() {
-		return LocalDate.now();
 	}
 
 	private void calculaDataDevolucao(final EmprestimoDto emprestimoDto) {

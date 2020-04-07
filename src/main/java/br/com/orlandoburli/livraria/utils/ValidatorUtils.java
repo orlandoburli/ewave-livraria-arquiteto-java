@@ -15,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
-import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
 public class ValidatorUtils {
 
 	@Autowired
@@ -46,10 +44,6 @@ public class ValidatorUtils {
 				final String key = cv.getPropertyPath().toString();
 
 				errors.put(StringUtils.isEmpty(key) ? "entity" : key, errosField);
-			}
-
-			if (log.isInfoEnabled()) {
-				log.info("Erro de validação - " + errors.toString());
 			}
 
 			throw new ValidationLivrariaException("Erro ao salvar dados", errors);
