@@ -1,10 +1,13 @@
 package br.com.orlandoburli.livraria.emprestimo;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDate;
 import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +26,7 @@ import br.com.orlandoburli.livraria.dto.EmprestimoDto;
 import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.dto.LivroDto;
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
+import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
@@ -74,7 +78,14 @@ public class EmprestimoServiceTests {
 
 		final UsuarioDto usuario = usuario();
 
-		service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+
+		assertThat(emprestimo, is(notNullValue()));
+		assertThat(emprestimo.getId(), is(greaterThan(0L)));
+		assertThat(emprestimo.getLivro().getId(), is(equalTo(livro.getId())));
+		assertThat(emprestimo.getUsuario().getId(), is(equalTo(usuario.getId())));
+		assertThat(emprestimo.getDataEmprestimo(), is(equalTo(LocalDate.now())));
+		assertThat(emprestimo.getStatus(), is(equalTo(StatusEmprestimo.ABERTO)));
 	}
 
 	@Test
@@ -132,6 +143,12 @@ public class EmprestimoServiceTests {
 		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
 
 		service.devolverLivro(emprestimo.getId());
+
+		final EmprestimoDto founded = service.get(emprestimo.getId());
+
+		assertThat(emprestimo, is(notNullValue()));
+		assertThat(emprestimo.getDataDevolucao(), is(equalTo(LocalDate.now())));
+		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.DEVOLVIDO)));
 	}
 
 	@Test
