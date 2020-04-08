@@ -567,9 +567,9 @@ public class UsuarioServiceTest {
 
 		final LivroDto livro1 = livro();
 
-		final EmprestimoDto emprestimo1 = emprestimoService.realizarEmprestimo(usuario.getId(), livro1.getId());
+		final EmprestimoDto emprestimo1 = emprestimoService.emprestar(usuario.getId(), livro1.getId());
 
-		emprestimoService.devolverLivro(emprestimo1.getId());
+		emprestimoService.devolver(emprestimo1.getId());
 
 		service.destroy(usuario.getId());
 
@@ -593,7 +593,7 @@ public class UsuarioServiceTest {
 
 		final LivroDto livro1 = livro();
 
-		emprestimoService.realizarEmprestimo(usuario.getId(), livro1.getId());
+		emprestimoService.emprestar(usuario.getId(), livro1.getId());
 
 		assertThrows(UsuarioPossuiEmprestimosAbertosException.class, () -> service.destroy(usuario.getId()));
 	}

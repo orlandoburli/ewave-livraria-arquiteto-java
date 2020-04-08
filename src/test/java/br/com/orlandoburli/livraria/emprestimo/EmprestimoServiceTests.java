@@ -28,13 +28,16 @@ import com.github.javafaker.Faker;
 import br.com.orlandoburli.livraria.dto.EmprestimoDto;
 import br.com.orlandoburli.livraria.dto.InstituicaoEnsinoDto;
 import br.com.orlandoburli.livraria.dto.LivroDto;
+import br.com.orlandoburli.livraria.dto.ReservaDto;
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
+import br.com.orlandoburli.livraria.exceptions.LivrariaException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaReservadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.UsuarioBloqueadoPorAtrasoException;
 import br.com.orlandoburli.livraria.exceptions.instituicaoensino.CnpjJaExistenteException;
@@ -87,16 +90,13 @@ public class EmprestimoServiceTests {
 	private final GeraCpfCnpj geradorCpfCnpj = new GeraCpfCnpj();
 
 	@Test
-	public void deveEmprestarLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
-			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveEmprestarLivro() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
 		assertThat(emprestimo, is(notNullValue()));
 		assertThat(emprestimo.getId(), is(greaterThan(0L)));
@@ -115,7 +115,7 @@ public class EmprestimoServiceTests {
 		final UsuarioDto usuario = usuario();
 
 		assertThrows(LivroNaoEncontradoException.class,
-				() -> service.realizarEmprestimo(usuario.getId(), faker.random().nextLong()));
+				() -> service.emprestar(usuario.getId(), faker.random().nextLong()));
 	}
 
 	@Test
@@ -125,7 +125,7 @@ public class EmprestimoServiceTests {
 
 		final UsuarioDto usuario = usuario();
 
-		assertThrows(LivroNaoInformadoException.class, () -> service.realizarEmprestimo(usuario.getId(), null));
+		assertThrows(LivroNaoInformadoException.class, () -> service.emprestar(usuario.getId(), null));
 	}
 
 	@Test
@@ -136,7 +136,7 @@ public class EmprestimoServiceTests {
 		final LivroDto livro = livro();
 
 		assertThrows(UsuarioNaoEncontradoException.class,
-				() -> service.realizarEmprestimo(faker.random().nextLong(), livro.getId()));
+				() -> service.emprestar(faker.random().nextLong(), livro.getId()));
 	}
 
 	@Test
@@ -146,22 +146,17 @@ public class EmprestimoServiceTests {
 
 		final LivroDto livro = livro();
 
-		assertThrows(UsuarioNaoInformadoException.class, () -> service.realizarEmprestimo(null, livro.getId()));
+		assertThrows(UsuarioNaoInformadoException.class, () -> service.emprestar(null, livro.getId()));
 	}
 
 	@Test
-	public void naoDeveEmprestarLivroAposMaisDe30DiasDoEmprestimoNaoDevolvido()
-			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
-			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void naoDeveEmprestarLivroAposMaisDe30DiasDoEmprestimoNaoDevolvido() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
 		final LocalDate dataDevolucao = LocalDate.now().plusDays(faker.random().nextInt(31, 50));
 
@@ -184,24 +179,19 @@ public class EmprestimoServiceTests {
 		final UsuarioDto usuario1 = usuario();
 		final UsuarioDto usuario2 = usuario();
 
-		service.realizarEmprestimo(usuario1.getId(), livro.getId());
+		service.emprestar(usuario1.getId(), livro.getId());
 
-		assertThrows(LivroJaEmprestadoException.class,
-				() -> service.realizarEmprestimo(usuario2.getId(), livro.getId()));
+		assertThrows(LivroJaEmprestadoException.class, () -> service.emprestar(usuario2.getId(), livro.getId()));
 	}
 
 	@Test
-	public void deveEncontrarEmprestimo() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
-			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
-			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveEncontrarEmprestimo() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
 		final EmprestimoDto founded = service.get(emprestimo.getId());
 
@@ -209,29 +199,22 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveEmprestarDoisLivros() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
-			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveEmprestarDoisLivros() throws LivrariaException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo1 = service.realizarEmprestimo(usuario.getId(), livro1.getId());
+		final EmprestimoDto emprestimo1 = service.emprestar(usuario.getId(), livro1.getId());
 		assertThat(emprestimo1, is(notNullValue()));
 
-		final EmprestimoDto emprestimo2 = service.realizarEmprestimo(usuario.getId(), livro2.getId());
+		final EmprestimoDto emprestimo2 = service.emprestar(usuario.getId(), livro2.getId());
 		assertThat(emprestimo2, is(notNullValue()));
 	}
 
 	@Test
-	public void naoDeveEmprestarMaisDe2Livros()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void naoDeveEmprestarMaisDe2Livros() throws LivrariaException {
 
 		final LivroDto livro1 = livro();
 		final LivroDto livro2 = livro();
@@ -239,33 +222,27 @@ public class EmprestimoServiceTests {
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo1 = service.realizarEmprestimo(usuario.getId(), livro1.getId());
+		final EmprestimoDto emprestimo1 = service.emprestar(usuario.getId(), livro1.getId());
 		assertThat(emprestimo1, is(notNullValue()));
 
-		final EmprestimoDto emprestimo2 = service.realizarEmprestimo(usuario.getId(), livro2.getId());
+		final EmprestimoDto emprestimo2 = service.emprestar(usuario.getId(), livro2.getId());
 		assertThat(emprestimo2, is(notNullValue()));
 
-		assertThrows(MaximoPedidosUsuarioException.class,
-				() -> service.realizarEmprestimo(usuario.getId(), livro3.getId()));
+		assertThrows(MaximoPedidosUsuarioException.class, () -> service.emprestar(usuario.getId(), livro3.getId()));
 	}
 
 	@Test
-	public void naoDeveEmprestarOMesmoLivroJaEmprestado()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void naoDeveEmprestarOMesmoLivroJaEmprestado() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario1 = usuario();
 		final UsuarioDto usuario2 = usuario();
 
-		final EmprestimoDto emprestimo1 = service.realizarEmprestimo(usuario1.getId(), livro.getId());
+		final EmprestimoDto emprestimo1 = service.emprestar(usuario1.getId(), livro.getId());
 		assertThat(emprestimo1, is(notNullValue()));
 
-		assertThrows(LivroJaEmprestadoException.class,
-				() -> service.realizarEmprestimo(usuario2.getId(), livro.getId()));
+		assertThrows(LivroJaEmprestadoException.class, () -> service.emprestar(usuario2.getId(), livro.getId()));
 	}
 
 	@Test
@@ -279,19 +256,15 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveDevolverLivro() throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException,
-			ValidationLivrariaException, LivroNaoInformadoException, UsuarioNaoEncontradoException,
-			LivroNaoEncontradoException, EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
-			EmprestimoNaoInformadoException, LivroJaEmprestadoException, MaximoPedidosUsuarioException,
-			UsuarioBloqueadoPorAtrasoException, CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveDevolverLivro() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
-		service.devolverLivro(emprestimo.getId());
+		service.devolver(emprestimo.getId());
 
 		final EmprestimoDto founded = service.get(emprestimo.getId());
 
@@ -301,24 +274,19 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveDevolverLivroAposMenosDe30DiasDoEmprestimo()
-			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
-			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveDevolverLivroAposMenosDe30DiasDoEmprestimo() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
 		final LocalDate dataDevolucao = LocalDate.now().plusDays(faker.random().nextInt(1, 29));
 
 		prepareClockMockFor(dataDevolucao);
 
-		service.devolverLivro(emprestimo.getId());
+		service.devolver(emprestimo.getId());
 
 		final EmprestimoDto founded = service.get(emprestimo.getId());
 
@@ -330,24 +298,19 @@ public class EmprestimoServiceTests {
 	}
 
 	@Test
-	public void deveDevolverLivroAposMaisDe30DiasDoEmprestimoEGerarRestricao()
-			throws LivroNaoInformadoException, ValidationLivrariaException, UsuarioNaoInformadoException,
-			InstituicaoEnsinoNaoInformadaException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void deveDevolverLivroAposMaisDe30DiasDoEmprestimoEGerarRestricao() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
 		final LocalDate dataDevolucao = LocalDate.now().plusDays(faker.random().nextInt(31, 50));
 
 		prepareClockMockFor(dataDevolucao);
 
-		service.devolverLivro(emprestimo.getId());
+		service.devolver(emprestimo.getId());
 
 		final EmprestimoDto founded = service.get(emprestimo.getId());
 
@@ -360,31 +323,77 @@ public class EmprestimoServiceTests {
 
 	@Test
 	public void naoDeveDevolverLivroEmprestimoNaoExistente() {
-		assertThrows(EmprestimoNaoEncontradoException.class, () -> service.devolverLivro(faker.random().nextLong()));
+		assertThrows(EmprestimoNaoEncontradoException.class, () -> service.devolver(faker.random().nextLong()));
 	}
 
 	@Test
 	public void naoDeveDevolverLivroEmprestimoNulo() {
-		assertThrows(EmprestimoNaoInformadoException.class, () -> service.devolverLivro(null));
+		assertThrows(EmprestimoNaoInformadoException.class, () -> service.devolver(null));
 	}
 
 	@Test
-	public void naoDeveDevolverLivroJaDevolvido()
-			throws UsuarioNaoInformadoException, InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException,
-			LivroNaoInformadoException, UsuarioNaoEncontradoException, LivroNaoEncontradoException,
-			EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException, EmprestimoNaoInformadoException,
-			LivroJaEmprestadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
-			CpfJaExistenteException, CnpjJaExistenteException {
+	public void naoDeveDevolverLivroJaDevolvido() throws LivrariaException {
 
 		final LivroDto livro = livro();
 
 		final UsuarioDto usuario = usuario();
 
-		final EmprestimoDto emprestimo = service.realizarEmprestimo(usuario.getId(), livro.getId());
+		final EmprestimoDto emprestimo = service.emprestar(usuario.getId(), livro.getId());
 
-		service.devolverLivro(emprestimo.getId());
+		service.devolver(emprestimo.getId());
 
-		assertThrows(EmprestimoJaDevolvidoException.class, () -> service.devolverLivro(emprestimo.getId()));
+		assertThrows(EmprestimoJaDevolvidoException.class, () -> service.devolver(emprestimo.getId()));
+	}
+
+	@Test
+	public void deveReservarLivro() throws LivrariaException {
+
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario = usuario();
+
+		final LocalDate dataReserva = LocalDate.now().plusDays(faker.random().nextInt(5, 10));
+
+		final ReservaDto reserva = service.reservar(usuario.getId(), livro.getId(), dataReserva);
+
+		assertThat(reserva, is(notNullValue()));
+		assertThat(reserva.getId(), is(greaterThan(0L)));
+		assertThat(reserva.getDataReserva(), is(equalTo(dataReserva)));
+		assertThat(reserva.getUsuario().getId(), is(equalTo(usuario.getId())));
+		assertThat(reserva.getLivro().getId(), is(equalTo(livro.getId())));
+	}
+
+	@Test
+	public void naoDeveReservarLivroJaReservado() throws LivrariaException {
+
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario1 = usuario();
+		final UsuarioDto usuario2 = usuario();
+
+		final LocalDate dataReserva1 = LocalDate.now().plusDays(faker.random().nextInt(5, 10));
+		final LocalDate dataReserva2 = dataReserva1.plusDays(-1);
+
+		service.reservar(usuario1.getId(), livro.getId(), dataReserva1);
+
+		assertThrows(LivroJaReservadoException.class,
+				() -> service.reservar(usuario2.getId(), livro.getId(), dataReserva2));
+	}
+
+	@Test
+	public void naoDeveReservarLivroJaEmprestado() throws LivrariaException {
+
+		final LivroDto livro = livro();
+
+		final UsuarioDto usuario1 = usuario();
+		final UsuarioDto usuario2 = usuario();
+
+		final LocalDate dataReserva1 = LocalDate.now().plusDays(faker.random().nextInt(5, 10));
+
+		service.emprestar(usuario1.getId(), livro.getId());
+
+		assertThrows(LivroJaEmprestadoException.class,
+				() -> service.reservar(usuario2.getId(), livro.getId(), dataReserva1));
 	}
 
 	// @formatter:off

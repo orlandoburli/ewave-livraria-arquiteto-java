@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 
 import br.com.orlandoburli.livraria.dto.EmprestimoDto;
 import br.com.orlandoburli.livraria.dto.LivroDto;
+import br.com.orlandoburli.livraria.dto.ReservaDto;
 import br.com.orlandoburli.livraria.dto.UsuarioDto;
 import br.com.orlandoburli.livraria.enums.StatusEmprestimo;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoJaDevolvidoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoEncontradoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.EmprestimoNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaEmprestadoException;
+import br.com.orlandoburli.livraria.exceptions.emprestimo.LivroJaReservadoException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.MaximoPedidosUsuarioException;
 import br.com.orlandoburli.livraria.exceptions.emprestimo.UsuarioBloqueadoPorAtrasoException;
 import br.com.orlandoburli.livraria.exceptions.livro.LivroNaoEncontradoException;
@@ -23,8 +25,10 @@ import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoEncontradoExcep
 import br.com.orlandoburli.livraria.exceptions.usuario.UsuarioNaoInformadoException;
 import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaException;
 import br.com.orlandoburli.livraria.model.Emprestimo;
+import br.com.orlandoburli.livraria.model.Reserva;
 import br.com.orlandoburli.livraria.model.Restricao;
 import br.com.orlandoburli.livraria.repository.EmprestimoRepository;
+import br.com.orlandoburli.livraria.repository.ReservaRepository;
 import br.com.orlandoburli.livraria.repository.RestricaoRepository;
 import br.com.orlandoburli.livraria.utils.ClockUtils;
 import br.com.orlandoburli.livraria.utils.MessagesService;
@@ -32,6 +36,8 @@ import br.com.orlandoburli.livraria.utils.ValidatorUtils;
 
 @Service
 public class EmprestimoService {
+
+	private static final String LIVRO_JA_RESERVADO_EXCEPTION = "exceptions.LivroJaReservadoException";
 
 	private static final int DIAS_RESTRICAO = 30;
 
@@ -52,6 +58,9 @@ public class EmprestimoService {
 
 	@Autowired
 	private RestricaoRepository restricaoRepository;
+
+	@Autowired
+	private ReservaRepository reservaRepository;
 
 	@Autowired
 	private UsuarioService usuarioService;
@@ -120,11 +129,13 @@ public class EmprestimoService {
 	 *                                            pelo usuario
 	 * @throws UsuarioBloqueadoPorAtrasoException Exceção disparada caso o usuário
 	 *                                            esteja bloqueado por atraso
+	 * @throws LivroJaReservadoException          Exceção disparada caso o livro já
+	 *                                            esteja reservado para alguém
 	 */
-	public EmprestimoDto realizarEmprestimo(final Long usuarioId, final Long livroId)
+	public EmprestimoDto emprestar(final Long usuarioId, final Long livroId)
 			throws UsuarioNaoEncontradoException, LivroNaoEncontradoException, UsuarioNaoInformadoException,
 			LivroNaoInformadoException, ValidationLivrariaException, LivroJaEmprestadoException,
-			MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException {
+			MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException, LivroJaReservadoException {
 
 		final UsuarioDto usuario = usuarioService.get(usuarioId);
 
@@ -168,7 +179,7 @@ public class EmprestimoService {
 	 * @throws ValidationLivrariaException      Exceção disparada caso haja algum
 	 *                                          erro nos dados do emprestimo
 	 */
-	public void devolverLivro(final Long id) throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
+	public void devolver(final Long id) throws EmprestimoNaoEncontradoException, EmprestimoJaDevolvidoException,
 			EmprestimoNaoInformadoException, ValidationLivrariaException {
 		final EmprestimoDto emprestimo = get(id);
 
@@ -189,16 +200,78 @@ public class EmprestimoService {
 	}
 
 	/**
+	 * Reserva um livra para emprestimo
+	 *
+	 * @param usuarioId   Id do usuário
+	 * @param livroId     Id do livro
+	 * @param dataReserva Data para a qual se quer reservar o livro
+	 * @throws UsuarioNaoEncontradoException      Exceção disparada caso o usuário
+	 *                                            não seja encontrado
+	 * @throws LivroNaoEncontradoException        Exceção disparada caso o Livro não
+	 *                                            seja encontrado
+	 * @throws UsuarioNaoInformadoException       Exceção disparada caso o usuário
+	 *                                            não seja informado
+	 * @throws LivroNaoInformadoException         Exceção disparada caso o livro não
+	 *                                            seja informado
+	 * @throws ValidationLivrariaException        Exceção disparada caso haja algum
+	 *                                            erro na validação dos dados do
+	 *                                            emprestimo
+	 * @throws LivroJaEmprestadoException         Exceção disparada caso o livro já
+	 *                                            esteja emprestado
+	 * @throws MaximoPedidosUsuarioException      Exceção disparada caso o máximo de
+	 *                                            emprestimos já tenha sido feito
+	 *                                            pelo usuario
+	 * @throws UsuarioBloqueadoPorAtrasoException Exceção disparada caso o usuário
+	 *                                            esteja bloqueado por atraso
+	 * @throws LivroJaReservadoException          Exceção disparada caso o livro já
+	 *                                            esteja reservado para alguém
+	 *
+	 */
+	public ReservaDto reservar(final Long usuarioId, final Long livroId, final LocalDate dataReserva)
+			throws UsuarioNaoEncontradoException, UsuarioNaoInformadoException, LivroNaoEncontradoException,
+			LivroNaoInformadoException, MaximoPedidosUsuarioException, UsuarioBloqueadoPorAtrasoException,
+			LivroJaEmprestadoException, LivroJaReservadoException {
+		final UsuarioDto usuario = usuarioService.get(usuarioId);
+
+		final LivroDto livro = livroService.get(livroId);
+
+		validaImpedimentosUsuario(usuario);
+
+		validaImpedimentosLivro(livro);
+
+		// @formatter:off
+		final ReservaDto reserva = ReservaDto
+				.builder()
+					.usuario(usuario)
+					.livro(livro)
+					.dataReserva(dataReserva)
+				.build();
+		// @formatter:on
+
+		final Reserva created = reservaRepository.save(conversionService.convert(reserva, Reserva.class));
+
+		return conversionService.convert(created, ReservaDto.class);
+	}
+
+	/**
 	 * Verifica se existe algum impedimento para o emprestimo deste livro
 	 *
 	 * @param livro Livro a ser verificado
 	 * @throws LivroJaEmprestadoException Exceção disparada caso o livro já esteja
 	 *                                    emprestado para alguém
+	 * @throws LivroJaReservadoException  Exceção disparada caso o livro já esteja
+	 *                                    reservado para alguém
 	 */
-	public void validaImpedimentosLivro(final LivroDto livro) throws LivroJaEmprestadoException {
+	public void validaImpedimentosLivro(final LivroDto livro)
+			throws LivroJaEmprestadoException, LivroJaReservadoException {
 		if (repository.findByLivroIdAndStatus(livro.getId(), StatusEmprestimo.ABERTO).isPresent()) {
 			throw new LivroJaEmprestadoException(messages.get(LIVRO_JA_EMPRESTADO_EXCEPTION, livro.getId()));
 		}
+
+		if (reservaRepository.findByLivroIdAndDataReservaGreaterThanEqual(livro.getId(), clock.hoje()).isPresent()) {
+			throw new LivroJaReservadoException(messages.get(LIVRO_JA_RESERVADO_EXCEPTION, livro.getId()));
+		}
+
 	}
 
 	/**
