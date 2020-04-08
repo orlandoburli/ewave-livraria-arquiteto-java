@@ -143,7 +143,7 @@ public class EmprestimoService {
 
 		validaImpedimentosUsuario(usuario);
 
-		validaImpedimentosLivro(livro);
+		validaImpedimentosLivro(livro, usuario.getId());
 
 		// @formatter:off
 		final EmprestimoDto emprestimo = EmprestimoDto
@@ -237,7 +237,7 @@ public class EmprestimoService {
 
 		validaImpedimentosUsuario(usuario);
 
-		validaImpedimentosLivro(livro);
+		validaImpedimentosLivro(livro, usuario.getId());
 
 		// @formatter:off
 		final ReservaDto reserva = ReservaDto
@@ -256,22 +256,25 @@ public class EmprestimoService {
 	/**
 	 * Verifica se existe algum impedimento para o emprestimo deste livro
 	 *
-	 * @param livro Livro a ser verificado
+	 * @param livro     Livro a ser verificado
+	 * @param usuarioId Id do usuário para ser excluído da pesquisa de reservas.
+	 *                  Caso queira ver todos os usuários, informar 0 (zero).
 	 * @throws LivroJaEmprestadoException Exceção disparada caso o livro já esteja
 	 *                                    emprestado para alguém
 	 * @throws LivroJaReservadoException  Exceção disparada caso o livro já esteja
 	 *                                    reservado para alguém
 	 */
-	public void validaImpedimentosLivro(final LivroDto livro)
+	public void validaImpedimentosLivro(final LivroDto livro, final Long usuarioId)
 			throws LivroJaEmprestadoException, LivroJaReservadoException {
 		if (repository.findByLivroIdAndStatus(livro.getId(), StatusEmprestimo.ABERTO).isPresent()) {
 			throw new LivroJaEmprestadoException(messages.get(LIVRO_JA_EMPRESTADO_EXCEPTION, livro.getId()));
 		}
 
-		if (reservaRepository.findByLivroIdAndDataReservaGreaterThanEqual(livro.getId(), clock.hoje()).isPresent()) {
+		if (reservaRepository
+				.findByLivroIdAndDataReservaGreaterThanEqualAndUsuarioIdNot(livro.getId(), clock.hoje(), usuarioId)
+				.isPresent()) {
 			throw new LivroJaReservadoException(messages.get(LIVRO_JA_RESERVADO_EXCEPTION, livro.getId()));
 		}
-
 	}
 
 	/**

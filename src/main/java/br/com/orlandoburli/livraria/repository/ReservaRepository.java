@@ -11,5 +11,6 @@ import br.com.orlandoburli.livraria.model.Reserva;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
-	Optional<Reserva> findByLivroIdAndDataReservaGreaterThanEqual(Long livroId, LocalDate dataReservas);
+	Optional<Reserva> findByLivroIdAndDataReservaGreaterThanEqualAndUsuarioIdNot(Long livroId, LocalDate dataReservas,
+			Long usuarioId);
 }
