@@ -18,7 +18,7 @@ public abstract class LivrariaException extends Exception {
 
 	@Override
 	@JsonIgnore
-	public Throwable getCause() {
+	public synchronized Throwable getCause() {
 		return super.getCause();
 	}
 }
