@@ -60,7 +60,7 @@ public class EmprestimoResource {
 			@ApiParam("Id do livro") @PathVariable("livro") final Long livroId,
 			@ApiParam("Id do usuário") @PathVariable("usuario") final Long usuarioId,
 			@ApiParam("Data da reserva. Usar o formato YYYY-MM-DD") @PathVariable("data") final LocalDate data
-		) throws UsuarioException, LivroException, EmprestimoException, ValidationLivrariaException {
+		) throws UsuarioException, LivroException, EmprestimoException {
 		return service.reservar(usuarioId, livroId, data);
 	}
 
