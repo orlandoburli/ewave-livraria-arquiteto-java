@@ -161,7 +161,6 @@ public class LivroResourceTests {
 	}
 
 	private LivroDto livro() {
-		// @formatter:off
 		final LivroDto livro = LivroDto
 			.builder()
 				.titulo(faker.book().title())

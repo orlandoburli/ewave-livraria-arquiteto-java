@@ -1,6 +1,7 @@
 package br.com.orlandoburli.livraria.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum StatusEmprestimo {
 
@@ -18,6 +19,7 @@ public enum StatusEmprestimo {
 		return valor;
 	}
 
+	@JsonValue
 	public String getDescricao() {
 		return descricao;
 	}

@@ -3,6 +3,7 @@ package br.com.orlandoburli.livraria.resources;
 import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,7 +60,7 @@ public class EmprestimoResource {
 	public ReservaDto reservar(
 			@ApiParam("Id do livro") @PathVariable("livro") final Long livroId,
 			@ApiParam("Id do usuário") @PathVariable("usuario") final Long usuarioId,
-			@ApiParam("Data da reserva. Usar o formato YYYY-MM-DD") @PathVariable("data") final LocalDate data
+			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @ApiParam("Data da reserva. Usar o formato YYYY-MM-DD") @PathVariable("data") final LocalDate data
 		) throws UsuarioException, LivroException, EmprestimoException {
 		return service.reservar(usuarioId, livroId, data);
 	}
