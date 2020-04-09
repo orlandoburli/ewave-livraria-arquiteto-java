@@ -27,8 +27,7 @@ public enum StatusEmprestimo {
 	@JsonCreator
 	public static StatusEmprestimo from(final String requisicao) {
 		for (final StatusEmprestimo s : StatusEmprestimo.values()) {
-			if (s.getValor().equals(requisicao) || s.getDescricao().equalsIgnoreCase(requisicao)
-					|| s.getValor().equalsIgnoreCase(requisicao)) {
+			if (s.getValor().equalsIgnoreCase(requisicao)) {
 				return s;
 			}
 		}
