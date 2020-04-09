@@ -631,18 +631,6 @@ public class UsuarioServiceTest {
 		return livroService.create(livro);
 	}
 
-	private InstituicaoEnsinoDto instituicao() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, CnpjJaExistenteException {
-		final InstituicaoEnsinoDto instituicaoEnsino = InstituicaoEnsinoDto
-				.builder()
-					.nome(faker.company().name())
-					.cnpj(geradorCpfCnpj.cnpj())
-					.telefone(faker.phoneNumber().cellPhone())
-					.endereco(faker.address().fullAddress())
-				.build();
-
-		return instituicaoEnsinoService.create(instituicaoEnsino);
-	}
-
 	private UsuarioDto usuario() throws UsuarioNaoInformadoException, ValidationLivrariaException, InstituicaoEnsinoNaoInformadaException, CpfJaExistenteException, CnpjJaExistenteException {
 		final UsuarioDto usuario = UsuarioDto
 				.builder()
@@ -655,6 +643,18 @@ public class UsuarioServiceTest {
 				.build();
 
 		return usuario;
+	}
+
+	private InstituicaoEnsinoDto instituicao() throws InstituicaoEnsinoNaoInformadaException, ValidationLivrariaException, CnpjJaExistenteException {
+		final InstituicaoEnsinoDto instituicaoEnsino = InstituicaoEnsinoDto
+				.builder()
+					.nome(faker.company().name())
+					.cnpj(geradorCpfCnpj.cnpj())
+					.telefone(faker.phoneNumber().cellPhone())
+					.endereco(faker.address().fullAddress())
+				.build();
+
+		return instituicaoEnsinoService.create(instituicaoEnsino);
 	}
 
 	private InstituicaoEnsinoDto instituicaoEnsinoInativa()
