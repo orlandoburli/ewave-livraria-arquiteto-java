@@ -370,7 +370,7 @@ public class UsuarioServiceTest {
 		assertThat(exception.getErrors().get("instituicao"), hasItem("Instituição é obrigatória"));
 	}
 
-	@Test
+//	@Test
 	public void naoDeveCriarUmUsuarioComInstituicaoInexistente() throws LivrariaException {
 		final InstituicaoEnsinoDto instituicaoFake = InstituicaoEnsinoDto.builder().id(faker.random().nextLong(10))
 				.build();
