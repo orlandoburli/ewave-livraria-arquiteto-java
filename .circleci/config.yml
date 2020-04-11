@@ -28,6 +28,8 @@ jobs:
       - run: mvn clean package -Dbuild=$CIRCLE_BUILD_NUM -Dmaven.test.skip=true
       - store_artifacts:
           path: deploy
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run: |
           echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin
       - run: 

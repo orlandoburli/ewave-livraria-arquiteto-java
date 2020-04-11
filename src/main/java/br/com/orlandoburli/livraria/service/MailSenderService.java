@@ -8,9 +8,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-
 import br.com.orlandoburli.livraria.dto.MensagemDto;
 
 @Service
@@ -20,7 +17,7 @@ public class MailSenderService {
 	private JavaMailSender javaMailSender;
 
 	@RabbitListener(queuesToDeclare = { @Queue(NotificacaoService.FILA_MENSAGENS) })
-	public void receive(@Payload final MensagemDto mensagem) throws JsonMappingException, JsonProcessingException {
+	public void receive(@Payload final MensagemDto mensagem) {
 		sendEmail(mensagem);
 	}
 
