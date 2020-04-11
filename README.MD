@@ -77,7 +77,7 @@ https://medium.com/@orlando.burli/criando-e-gerenciando-um-cluster-kubernetes-st
 Para acessar o swagger do projeto, basta executar o projeto e acessar a url: http://localhost:8080/swagger-ui.html. O mesmo é dinâmico, gerado pelas anotações presentes nas classes de *Resources*.
 
 ## Modelo de dados
-[![modelo](docs/Livraria.png)](https://dbdiagram.io/d/5e285bfd9e76504e0ef08a7c)
+[![modelo](docs/livraria_2.png)](https://dbdiagram.io/d/5e285bfd9e76504e0ef08a7c)
 
 Uma observação interessante sobre esta modelagem: é comum armazenar *blob's* diretamente na classe da entidade. Porém eu utilizo esta abordagem, de separar quaisquer dados binários em outra tabela, de forma a ter ganhos de performance tanto em leitura quanto em escrita, pois o banco de dados trabalha com leitura sequencial dos dados. Uma coluna binária poderia arruinar esta performance. Embora os bancos de dados mais modernos já tenham maneiras de contornar este problema (como o *Oracle* por exemplo, é possível colocar uma coluna específica em outra *tablespace*), é preferível esta abordagem que nos deixa livres para aproveitar outros recursos do banco (como o *table partitioning*, da *Oracle*).
 
