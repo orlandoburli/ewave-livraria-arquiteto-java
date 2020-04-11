@@ -3,6 +3,7 @@ target/
 deploy/
 infra/data
 infra/pgadmin
+infra/pgadmin/*
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
