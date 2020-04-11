@@ -42,7 +42,7 @@ CREATE TABLE livraria.capa (
 	id numeric(8) not null,
 	imagem bytea,
 	CONSTRAINT pk_capa PRIMARY KEY (id),
-	CONSTRAINT fk_capa_livro FOREIGN KEY (id) REFERENCES livraria.capa (id)
+	CONSTRAINT fk_capa_livro FOREIGN KEY (id) REFERENCES livraria.livro (id)
 );
 
 CREATE TABLE livraria.emprestimo (
