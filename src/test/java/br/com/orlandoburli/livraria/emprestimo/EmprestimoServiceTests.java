@@ -7,6 +7,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
@@ -54,6 +56,8 @@ import br.com.orlandoburli.livraria.exceptions.validations.ValidationLivrariaExc
 import br.com.orlandoburli.livraria.service.EmprestimoService;
 import br.com.orlandoburli.livraria.service.InstituicaoEnsinoService;
 import br.com.orlandoburli.livraria.service.LivroService;
+import br.com.orlandoburli.livraria.service.MailSenderService;
+import br.com.orlandoburli.livraria.service.NotificacaoService;
 import br.com.orlandoburli.livraria.service.UsuarioService;
 import br.com.orlandoburli.livraria.utils.ClockUtils;
 import br.com.orlandoburli.livraria.utils.DbPrepareUtils;
@@ -84,6 +88,12 @@ public class EmprestimoServiceTests {
 
 	@Mock
 	private ClockUtils clock;
+
+	@Mock
+	private NotificacaoService notificacaoService;
+
+	@Mock
+	MailSenderService mailSender;
 
 	private final Faker faker = new Faker(new Locale("pt", "BR"));
 
@@ -319,6 +329,8 @@ public class EmprestimoServiceTests {
 		assertThat(founded.getStatus(), is(equalTo(StatusEmprestimo.DEVOLVIDO)));
 
 		assertThrows(UsuarioBloqueadoPorAtrasoException.class, () -> service.validaImpedimentosUsuario(usuario));
+
+		verify(notificacaoService).notificarEntregaComAtraso(any());
 	}
 
 	@Test
@@ -438,6 +450,8 @@ public class EmprestimoServiceTests {
 		dbPrepareUtils.clean();
 
 		ReflectionUtils.setValue("clock", service, clock);
+
+		ReflectionUtils.setValue("notificacaoService", service, notificacaoService);
 
 		prepareClockMockForToday();
 	}

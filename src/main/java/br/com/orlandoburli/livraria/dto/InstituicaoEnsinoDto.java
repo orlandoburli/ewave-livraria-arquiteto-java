@@ -2,6 +2,8 @@ package br.com.orlandoburli.livraria.dto;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.com.orlandoburli.livraria.enums.Status;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -33,5 +35,6 @@ public class InstituicaoEnsinoDto implements Serializable {
 	private String telefone;
 
 	@ApiModelProperty(name = "Status da instituição", position = 6)
+	@JsonIgnore
 	private Status status;
 }

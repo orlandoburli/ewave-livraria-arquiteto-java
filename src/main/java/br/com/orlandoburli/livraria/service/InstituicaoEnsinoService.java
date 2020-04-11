@@ -117,6 +117,8 @@ public class InstituicaoEnsinoService {
 
 		final InstituicaoEnsino entity = conversionService.convert(instituicaoEnsino, InstituicaoEnsino.class);
 
+		entity.setStatus(Status.ATIVO);
+
 		validatorUtils.validate(entity);
 
 		validaCnpjExistente(entity.getCnpj(), entity.getId());

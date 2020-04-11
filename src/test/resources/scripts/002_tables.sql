@@ -6,7 +6,7 @@ CREATE SEQUENCE livraria.seq_restricao START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE livraria.seq_reserva START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE livraria.instituicao_ensino (
-	id number(8) not null,
+	id numeric(8) not null,
 	nome varchar(100),
 	endereco varchar(100),
 	telefone varchar(11),
@@ -16,20 +16,20 @@ CREATE TABLE livraria.instituicao_ensino (
 );
 
 CREATE TABLE livraria.usuario (
-	id number(8) not null,
+	id numeric(8) not null,
 	nome varchar(100),
 	endereco varchar(100),
 	telefone varchar(11),
 	email varchar(200),
 	cpf char(11),
-	instituicao_id number(8),
+	instituicao_id numeric(8),
 	status char(1) not null,
 	CONSTRAINT pk_usuario PRIMARY KEY (id),
 	CONSTRAINT fk_usuario_instituicao_ensino FOREIGN KEY (instituicao_id) REFERENCES livraria.instituicao_ensino(id)
 );
 
 CREATE TABLE livraria.livro (
-	id number(8) not null,
+	id numeric(8) not null,
 	titulo varchar(100),
 	genero varchar(100),
 	autor varchar(100),
@@ -39,16 +39,16 @@ CREATE TABLE livraria.livro (
 );
 
 CREATE TABLE livraria.capa (
-	id number(8) not null,
+	id numeric(8) not null,
 	imagem blob,
 	CONSTRAINT pk_capa PRIMARY KEY (id),
 	CONSTRAINT fk_capa_livro FOREIGN KEY (id) REFERENCES livraria.capa (id)
 );
 
 CREATE TABLE livraria.emprestimo (
-	id number(8) not null,
-	usuario_id number(8) not null,
-	livro_id number(8) not null,
+	id numeric(8) not null,
+	usuario_id numeric(8) not null,
+	livro_id numeric(8) not null,
 	data_emprestimo date not null,
 	data_devolucao date,
 	status char(1) not null,
@@ -59,17 +59,17 @@ CREATE TABLE livraria.emprestimo (
 );
 
 CREATE TABLE livraria.restricao (
-	id number(8) not null,
-	emprestimo_id number(8) not null,
+	id numeric(8) not null,
+	emprestimo_id numeric(8) not null,
 	restrito_ate date,
 	CONSTRAINT pk_restricao PRIMARY KEY (id),
 	CONSTRAINT fk_restricao_emprestimo FOREIGN KEY (emprestimo_id) REFERENCES livraria.emprestimo(id)
 );
 
 CREATE TABLE livraria.reserva (
-	id number(8) not null,
-	usuario_id number(8) not null,
-	livro_id number(8) not null,
+	id numeric(8) not null,
+	usuario_id numeric(8) not null,
+	livro_id numeric(8) not null,
 	data_reserva date not null,
 	CONSTRAINT pk_reserva PRIMARY KEY (id),
 	CONSTRAINT fk_reserva_usuario FOREIGN KEY (usuario_id) REFERENCES livraria.usuario(id),

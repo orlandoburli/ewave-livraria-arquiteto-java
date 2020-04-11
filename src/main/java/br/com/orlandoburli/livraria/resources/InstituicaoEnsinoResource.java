@@ -1,5 +1,7 @@
 package br.com.orlandoburli.livraria.resources;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +26,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("instituicoes")
 @Api(tags = "Instituições de Ensino", description = "API para manipulação das Instituições de Ensino.")
+@Transactional
 public class InstituicaoEnsinoResource {
 
 	// @formatter:off

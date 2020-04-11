@@ -1,0 +1,14 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "Livraria DB Server",
+            "Group": "Cloud Demo",
+            "Port": 5432,
+            "Username": "postgres",
+            "Host": "livraria-db",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres",
+            "Password": "l1vr4r14"
+        }
+    }
+}

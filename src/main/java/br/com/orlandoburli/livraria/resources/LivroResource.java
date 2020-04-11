@@ -2,6 +2,8 @@ package br.com.orlandoburli.livraria.resources;
 
 import java.io.IOException;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +30,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("livros")
 @Api(tags = "Livros", description = "API para manipulação de livros.")
+@Transactional
 public class LivroResource {
 
 	// @formatter:off

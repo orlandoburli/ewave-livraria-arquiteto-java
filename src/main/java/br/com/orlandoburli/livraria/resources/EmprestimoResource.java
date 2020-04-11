@@ -2,6 +2,8 @@ package br.com.orlandoburli.livraria.resources;
 
 import java.time.LocalDate;
 
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("")
 @Api(tags = "Empréstimos", description = "API para realizar empréstimos e devoluções.")
+@Transactional
 public class EmprestimoResource {
 
 	// @formatter:off
@@ -67,7 +70,7 @@ public class EmprestimoResource {
 
 	@ApiOperation("Devolve um livro.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "Livro devolvido com sucesso."),
+		@ApiResponse(code = 204, message = "Livro devolvido com sucesso."),
 		@ApiResponse(code = 404, message = "Empréstimo não encontrado."),
 		@ApiResponse(code = 422, message = "Dados inválidos.")
 	})

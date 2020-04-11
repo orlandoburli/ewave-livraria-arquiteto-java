@@ -25,3 +25,8 @@ spring:
     show-sql: true
   main:
     allow-bean-definition-overriding: true
+  flyway:
+    schemas:
+    - livraria
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration

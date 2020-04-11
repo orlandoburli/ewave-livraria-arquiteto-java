@@ -106,6 +106,8 @@ public class UsuarioService {
 
 		final Usuario entity = conversionService.convert(usuario, Usuario.class);
 
+		entity.setStatus(Status.ATIVO);
+
 		validatorUtils.validate(entity);
 
 		validaCpfExistente(entity.getCpf(), entity.getId());

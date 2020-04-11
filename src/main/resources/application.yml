@@ -1,12 +1,9 @@
 spring:
   datasource:
-    driver-class-name: org.h2.Driver
-    password: sa
-    tomcat:
-      test-while-idle: true
-      validation-query: SELECT 1 FROM DUAL
-    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MODE=Oracle
-    username: sa
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/livraria
+    username: postgres
+    password: l1vr4r14
   http:
     encoding:
       charset: UTF-8
@@ -25,3 +22,22 @@ spring:
     show-sql: true
   main:
     allow-bean-definition-overriding: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    password: VCa3NZbg8UC6qAUE
+    username: emailtesterorlando@gmail.com
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin

@@ -80,7 +80,7 @@ public class EmprestimoService {
 	@Autowired
 	private ClockUtils clock;
 
-	@Autowired
+	@Autowired(required = false)
 	private NotificacaoService notificacaoService;
 
 	/**
@@ -324,6 +324,8 @@ public class EmprestimoService {
 		// @formatter:on
 		restricaoRepository.save(restricao);
 
+		emprestimo.setDataPrevistaDevolucao(calculaDataDevolucao(emprestimo.getDataEmprestimo()));
+
 		notificacaoService.notificarEntregaComAtraso(emprestimo);
 	}
 
@@ -351,11 +353,11 @@ public class EmprestimoService {
 		}
 	}
 
-	private LocalDate calculaDataRestricao(final LocalDate dataDevolucao) {
+	public LocalDate calculaDataRestricao(final LocalDate dataDevolucao) {
 		return dataDevolucao.plusDays(DIAS_RESTRICAO);
 	}
 
-	private LocalDate calculaDataDevolucao(final LocalDate dataEmprestimo) {
+	public LocalDate calculaDataDevolucao(final LocalDate dataEmprestimo) {
 		return dataEmprestimo.plusDays(PRAZO_DEVOLUCAO);
 	}
 }

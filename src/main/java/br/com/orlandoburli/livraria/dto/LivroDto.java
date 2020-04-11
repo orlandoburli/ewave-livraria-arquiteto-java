@@ -1,5 +1,7 @@
 package br.com.orlandoburli.livraria.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import br.com.orlandoburli.livraria.enums.Status;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -29,5 +31,6 @@ public class LivroDto {
 	private String sinopse;
 
 	@ApiModelProperty(notes = "Status do cadastro do livro", position = 6)
+	@JsonIgnore
 	private Status status;
 }
